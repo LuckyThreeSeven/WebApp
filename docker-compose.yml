@@ -8,6 +8,10 @@ services:
       - "8000:8000"
     volumes:
       - ./backend/user_server:/app
+    env_file:
+      - ./backend/user_server/.env
+    depends_on:
+      - db
 
   mail-server:
     build:
@@ -31,3 +35,16 @@ services:
       - CHOKIDAR_USEPOLLING=true
     stdin_open: true
     tty: true
+
+  db:
+    build:
+      context: ./backend/user_db
+    env_file:
+      - ./backend/user_db/.env
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+volumes:
+  postgres_data:

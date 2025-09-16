@@ -5,11 +5,20 @@ ENV PYTHONUNBUFFERED 1
 
 WORKDIR /app
 
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+    postgresql-client \
+    netcat-openbsd && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+RUN pip install --upgrade pip
 
 COPY . .
+RUN pip install -r requirements.txt
 
-EXPOSE 8000
+RUN chmod +x ./entrypoint.sh
+
+ENTRYPOINT ["/app/entrypoint.sh"]
 
 CMD ["gunicorn", "config.wsgi:application", "--bind", "0.0.0.0:8000"]
