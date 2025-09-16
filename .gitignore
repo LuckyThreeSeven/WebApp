@@ -11,9 +11,15 @@ db.sqlite3
 /media/
 /static/
 .env
-backend/user_server/staticfiles/
+/backend/user_server/staticfiles/
+
+# Migrations
+*/migrations/*.py
+!*/migrations/__init__.py
 
 # React
 /frontend/node_modules
 /frontend/build
 /frontend/.env.local
+
+/backend/user_server/users/migrations/
