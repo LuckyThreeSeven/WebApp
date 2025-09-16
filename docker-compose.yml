@@ -1,0 +1,31 @@
+version: '3.8'
+
+services:
+  user-server:
+    build:
+      context: ./backend/user_server
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend/user_server:/app
+
+  mail-server:
+    build:
+      context: ./backend/mail_server
+    ports:
+      - "8001:8001"
+    volumes:
+      - ./backend/mail_server/app:/app
+
+  frontend:
+    build:
+      context: ./frontend
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+    stdin_open: true
+    tty: true
