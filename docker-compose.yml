@@ -23,19 +23,6 @@ services:
     volumes:
       - ./backend/mail_server/app:/app
 
-  frontend:
-    build:
-      context: ./frontend
-    ports:
-      - "3000:3000"
-    volumes:
-      - ./frontend:/app
-      - /app/node_modules
-    environment:
-      - CHOKIDAR_USEPOLLING=true
-    stdin_open: true
-    tty: true
-
   db:
     build:
       context: ./backend/user_db
