@@ -26,4 +26,9 @@ jobs:
 
             ---
             *Created from GitHub Issue:* ${{ github.event.issue.html_url }}
-          fields: { "parent": { "key": "NVS-57" }}
+          fields: |
+            {
+              "parent": {
+                "key": "NVS-57"
+              }
+            }
