@@ -1,31 +1,33 @@
-from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
-from django.db import IntegrityError
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from rest_framework import status
 from .models import User
-import json
+from .serializers import UserCreateSerializer
+from drf_spectacular.utils import extend_schema
 
 
-@csrf_exempt
+@extend_schema(
+    request=UserCreateSerializer,
+    responses={
+        201: {"description": "User created successfully"},
+        400: {"description": "Bad Request (e.g., invalid data, email exists)"},
+    },
+)
+@api_view(["POST"])
 def signup(request):
-    if request.method == "POST":
-        try:
-            data = json.loads(request.body)
-            email = data.get("email")
-            password = data.get("password")
+    serializer = UserCreateSerializer(data=request.data)
+    if serializer.is_valid():
+        email = serializer.validated_data["email"]
+        password = serializer.validated_data["password"]
 
-            if not email or not password:
-                return JsonResponse(
-                    {"error": "Email and password are required"}, status=400
-                )
+        if User.objects.filter(email=email).exists():
+            return Response(
+                {"error": "이미 존재하는 이메일입니다"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
-            if User.objects.filter(email=email).exists():
-                return JsonResponse({"error": "이미 존재하는 이메일입니다"}, status=400)
-
-            user = User.objects.create_user(email=email, password=password)
-            return JsonResponse({"message": "User created successfully"}, status=201)
-        except IntegrityError as e:
-            return JsonResponse({"error": "이미 존재하는 이메일입니다"}, status=400)
-        except Exception as e:
-            return JsonResponse({"error": str(e)}, status=500)
-    else:
-        return JsonResponse({"error": "Only POST method is allowed"}, status=405)
+        User.objects.create_user(email=email, password=password)
+        return Response(
+            {"message": "User created successfully"}, status=status.HTTP_201_CREATED
+        )
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
