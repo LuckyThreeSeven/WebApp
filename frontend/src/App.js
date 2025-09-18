@@ -122,6 +122,8 @@ function AuthPage({ onLoginSuccess }) {
 // 로그인 후 보여줄 유저 페이지
 function UserPage({ onLogout }) {
     const [username, setUsername] = useState('');
+    const [uuid, setUuid] = useState('');
+    const [nickname, setNickname] = useState('');
 
     useEffect(() => {
         const fetchUserData = async () => {
@@ -148,12 +150,72 @@ function UserPage({ onLogout }) {
         fetchUserData();
     }, [onLogout]);
 
+    const handleRegisterBlackbox = async (e) => {
+        e.preventDefault();
+        const token = localStorage.getItem('access_token');
+
+        if (!uuid || !nickname) {
+            alert('UUID와 닉네임을 모두 입력해주세요.');
+            return;
+        }
+
+        try {
+            const response = await fetch(`${API_URL}/api/status/blackboxes`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                },
+                body: JSON.stringify({
+                    uuid: uuid,
+                    nickname: nickname,
+                }),
+            });
+
+            if (response.ok) {
+                alert('블랙박스가 성공적으로 등록되었습니다.');
+                setUuid('');
+                setNickname('');
+            } else {
+                const errorData = await response.json();
+                alert(`블랙박스 등록 실패: ${JSON.stringify(errorData)}`);
+            }
+        } catch (error) {
+            alert(`블랙박스 등록 중 오류 발생: ${error}`);
+        }
+    };
+
 
   return (
     <div>
       <h1>환영합니다, {username}님!</h1>
       <p>로그인 되었습니다.</p>
       <button onClick={onLogout}>로그아웃</button>
+
+      <hr />
+
+      <div>
+        <h2>블랙박스 등록</h2>
+        <form onSubmit={handleRegisterBlackbox}>
+          <input
+            type="text"
+            value={uuid}
+            onChange={(e) => setUuid(e.target.value)}
+            placeholder="블랙박스 UUID"
+            required
+          />
+          <br />
+          <input
+            type="text"
+            value={nickname}
+            onChange={(e) => setNickname(e.target.value)}
+            placeholder="닉네임"
+            required
+          />
+          <br />
+          <button type="submit">블랙박스 등록</button>
+        </form>
+      </div>
     </div>
   );
 }
