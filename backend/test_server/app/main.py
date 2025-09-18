@@ -54,9 +54,18 @@ async def shutdown():
     pool.close()
     await pool.wait_closed()
 
+from datetime import datetime
+
 class Blackbox(BaseModel):
     uuid: str
     nickname: str
+
+class BlackboxInfo(BaseModel):
+    uuid: str
+    nickname: str
+    created_at: datetime
+    health_status: str
+    last_connected_at: datetime | None = None
 
 # OAuth2 scheme for extracting the token from the Authorization header
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
@@ -79,6 +88,15 @@ async def get_current_user_id(token: str = Depends(oauth2_scheme)) -> str:
 @app.get("/")
 def health_check():
     return {"status": "ok"}
+
+@app.get("/api/status/blackboxes", response_model=list[BlackboxInfo])
+async def get_user_blackboxes(user_id: str = Depends(get_current_user_id)):
+    sql = "SELECT uuid, nickname, created_at, health_status, last_connected_at FROM blackboxes WHERE user_id = %s"
+    async with pool.acquire() as conn:
+        async with conn.cursor(aiomysql.DictCursor) as cur:
+            await cur.execute(sql, (user_id,))
+            result = await cur.fetchall()
+            return result
 
 @app.post("/api/status/blackboxes")
 async def register_blackbox(blackbox: Blackbox, user_id: str = Depends(get_current_user_id)):
