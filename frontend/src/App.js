@@ -126,6 +126,9 @@ function UserPage({ onLogout }) {
     const [uuid, setUuid] = useState('');
     const [nickname, setNickname] = useState('');
     const [blackboxes, setBlackboxes] = useState([]);
+    const [selectedBlackboxId, setSelectedBlackboxId] = useState(null);
+    const [selectedDate, setSelectedDate] = useState('');
+    const [videoMetadata, setVideoMetadata] = useState([]);
 
     const fetchBlackboxes = async () => {
         const token = localStorage.getItem('access_token');
@@ -199,6 +202,40 @@ function UserPage({ onLogout }) {
         }
     };
 
+    const handleBlackboxClick = (blackboxUuid) => {
+        setSelectedBlackboxId(blackboxUuid);
+        setSelectedDate(''); // Reset date when new blackbox is selected
+        setVideoMetadata([]); // Clear previous metadata
+    };
+
+    const handleFetchMetadata = async () => {
+        if (!selectedBlackboxId || !selectedDate) {
+            alert("블랙박스와 날짜를 선택해주세요.");
+            return;
+        }
+
+        const token = localStorage.getItem('access_token');
+        try {
+            const response = await fetch(`${TEST_API_URL}/api/status/metadata?blackbox_id=${selectedBlackboxId}&date=${selectedDate}`,
+                {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                    },
+                }
+            );
+
+            if (response.ok) {
+                const data = await response.json();
+                setVideoMetadata(data);
+            } else {
+                const errorData = await response.json();
+                alert(`메타데이터 조회 실패: ${JSON.stringify(errorData)}`);
+            }
+        } catch (error) {
+            alert(`메타데이터 조회 중 오류 발생: ${error}`);
+        }
+    };
+
 
   return (
     <div>
@@ -211,18 +248,51 @@ function UserPage({ onLogout }) {
       <div>
         <h2>내 블랙박스 목록</h2>
         {blackboxes.length > 0 ? (
-          <ul>
-            {blackboxes.map((box) => (
-              <li key={box.uuid}>
-                <strong>{box.nickname}</strong> ({box.uuid})
-                <ul>
-                  <li>상태: {box.health_status}</li>
-                  <li>등록일: {new Date(box.created_at).toLocaleString()}</li>
-                  <li>마지막 접속: {box.last_connected_at ? new Date(box.last_connected_at).toLocaleString() : 'N/A'}</li>
-                </ul>
-              </li>
-            ))}
-          </ul>
+          <>
+            <ul>
+              {blackboxes.map((box) => (
+                <li key={box.uuid} onClick={() => handleBlackboxClick(box.uuid)} style={{ cursor: 'pointer', fontWeight: selectedBlackboxId === box.uuid ? 'bold' : 'normal' }}>
+                  <strong>{box.nickname}</strong> ({box.uuid})
+                  <ul>
+                    <li>상태: {box.health_status}</li>
+                    <li>등록일: {new Date(box.created_at).toLocaleString()}</li>
+                    <li>마지막 접속: {box.last_connected_at ? new Date(box.last_connected_at).toLocaleString() : 'N/A'}</li>
+                  </ul>
+                </li>
+              ))}
+            </ul>
+
+            {selectedBlackboxId && (
+                <div>
+                    <h3>선택된 블랙박스: {blackboxes.find(b => b.uuid === selectedBlackboxId)?.nickname || selectedBlackboxId}</h3>
+                    <input
+                        type="date"
+                        value={selectedDate}
+                        onChange={(e) => setSelectedDate(e.target.value)}
+                    />
+                    <button onClick={handleFetchMetadata}>영상 메타데이터 조회</button>
+
+                    {videoMetadata.length > 0 ? (
+                        <div>
+                            <h4>영상 메타데이터</h4>
+                            <ul>
+                                {videoMetadata.map((meta) => (
+                                    <li key={meta.id}>
+                                        Object Key: {meta.object_key}<br/>
+                                        Duration: {meta.duration} seconds<br/>
+                                        Recorded At: {new Date(meta.recorded_at).toLocaleString()}<br/>
+                                        File Size: {meta.file_size} bytes<br/>
+                                        File Type: {meta.file_type}
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+                    ) : (
+                        selectedDate && <p>선택된 날짜에 영상 메타데이터가 없습니다.</p>
+                    )}
+                </div>
+            )}
+          </>
         ) : (
           <p>등록된 블랙박스가 없습니다.</p>
         )}

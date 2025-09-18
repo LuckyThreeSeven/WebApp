@@ -129,12 +129,12 @@ class BlackboxInfo(BaseModel):
 
 class VideoMetadataInfo(BaseModel):
     id: int
-    object_key: str = Field(alias="file_path")
+    object_key: str
     duration: float
     created_at: datetime
     file_size: int
     file_type: str
-    recorded_at: datetime = Field(alias="stream_started_at")
+    recorded_at: datetime
 
 # OAuth2 scheme for extracting the token from the Authorization header
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
