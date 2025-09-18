@@ -4,3 +4,4 @@ psycopg2-binary
 bcrypt
 djangorestframework-simplejwt
 drf-spectacular
+django-cors-headers
