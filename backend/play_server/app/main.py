@@ -22,16 +22,19 @@ with open(private_key_path, "rb") as key_file:
 # FastAPI 앱 생성
 app = FastAPI()
 
+
 # -----------------------------
 # Signed URL 생성 함수
 # -----------------------------
 def generate_signed_url(object_key: str, expire_hours: int = 2):
-    expire_time = int((datetime.datetime.utcnow() + datetime.timedelta(hours=expire_hours)).timestamp())
+    expire_time = int(
+        (
+            datetime.datetime.utcnow() + datetime.timedelta(hours=expire_hours)
+        ).timestamp()
+    )
 
     signature = private_key.sign(
-        str(expire_time).encode("utf-8"),
-        padding.PKCS1v15(),
-        hashes.SHA1()
+        str(expire_time).encode("utf-8"), padding.PKCS1v15(), hashes.SHA1()
     )
 
     signature_b64 = (
@@ -49,6 +52,7 @@ def generate_signed_url(object_key: str, expire_hours: int = 2):
         f"&Key-Pair-Id={key_pair_id}"
     )
     return signed_url
+
 
 # -----------------------------
 # API 엔드포인트
