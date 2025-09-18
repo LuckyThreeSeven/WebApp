@@ -40,25 +40,33 @@ app.add_middleware(
 # Database connection pool
 pool = None
 
+
 @app.on_event("startup")
 async def startup():
     global pool
     pool = await aiomysql.create_pool(
-        host=DB_HOST, port=DB_PORT,
-        user=DB_USER, password=DB_PASSWORD,
-        db=DB_NAME, autocommit=True
+        host=DB_HOST,
+        port=DB_PORT,
+        user=DB_USER,
+        password=DB_PASSWORD,
+        db=DB_NAME,
+        autocommit=True,
     )
+
 
 @app.on_event("shutdown")
 async def shutdown():
     pool.close()
     await pool.wait_closed()
 
+
 from datetime import datetime
+
 
 class Blackbox(BaseModel):
     uuid: str
     nickname: str
+
 
 class BlackboxInfo(BaseModel):
     uuid: str
@@ -67,8 +75,10 @@ class BlackboxInfo(BaseModel):
     health_status: str
     last_connected_at: datetime | None = None
 
+
 # OAuth2 scheme for extracting the token from the Authorization header
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+
 
 async def get_current_user_id(token: str = Depends(oauth2_scheme)) -> str:
     credentials_exception = HTTPException(
@@ -85,9 +95,11 @@ async def get_current_user_id(token: str = Depends(oauth2_scheme)) -> str:
     except jwt.PyJWTError:
         raise credentials_exception
 
+
 @app.get("/")
 def health_check():
     return {"status": "ok"}
+
 
 @app.get("/api/status/blackboxes", response_model=list[BlackboxInfo])
 async def get_user_blackboxes(user_id: str = Depends(get_current_user_id)):
@@ -98,16 +110,21 @@ async def get_user_blackboxes(user_id: str = Depends(get_current_user_id)):
             result = await cur.fetchall()
             return result
 
+
 @app.post("/api/status/blackboxes")
-async def register_blackbox(blackbox: Blackbox, user_id: str = Depends(get_current_user_id)):
+async def register_blackbox(
+    blackbox: Blackbox, user_id: str = Depends(get_current_user_id)
+):
     sql = "INSERT INTO blackboxes (uuid, user_id, nickname) VALUES (%s, %s, %s)"
     async with pool.acquire() as conn:
         async with conn.cursor() as cur:
             try:
                 await cur.execute(sql, (blackbox.uuid, user_id, blackbox.nickname))
-                return {"message": f"Blackbox '{blackbox.nickname}' registered successfully for user {user_id}."}
+                return {
+                    "message": f"Blackbox '{blackbox.nickname}' registered successfully for user {user_id}."
+                }
             except aiomysql.Error as e:
                 raise HTTPException(
                     status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                    detail=f"Database error: {e}"
+                    detail=f"Database error: {e}",
                 )
