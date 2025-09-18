@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 
 // API 기본 URL
 const API_URL = 'http://localhost:8000';
+const TEST_API_URL = 'http://localhost:4242';
 
 // 회원가입/로그인 페이지 컴포넌트
 function AuthPage({ onLoginSuccess }) {
@@ -124,6 +125,29 @@ function UserPage({ onLogout }) {
     const [username, setUsername] = useState('');
     const [uuid, setUuid] = useState('');
     const [nickname, setNickname] = useState('');
+    const [blackboxes, setBlackboxes] = useState([]);
+
+    const fetchBlackboxes = async () => {
+        const token = localStorage.getItem('access_token');
+        try {
+            const response = await fetch(`${TEST_API_URL}/api/status/blackboxes`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                },
+            });
+            if (response.ok) {
+                const data = await response.json();
+                setBlackboxes(data);
+            } else {
+                // Handle error, maybe logout
+                console.error("Failed to fetch blackboxes");
+                onLogout();
+            }
+        } catch (error) {
+            console.error("Error fetching blackboxes:", error);
+            onLogout();
+        }
+    };
 
     useEffect(() => {
         const fetchUserData = async () => {
@@ -132,19 +156,8 @@ function UserPage({ onLogout }) {
                 onLogout();
                 return;
             }
-
-            try {
-                // 실제 사용자 정보를 가져오는 API가 있다면 여기에서 호출합니다.
-                // 예: /api/users/me/
-                // 우선은 간단히 토큰 유무로만 판단하고, 사용자 이름은 localStorage에서 가져오거나 임의로 설정합니다.
-                // 여기서는 간단하게 "사용자"라고 표시합니다.
-                setUsername("사용자");
-
-            } catch (error) {
-                console.error("Failed to fetch user data", error);
-                // 토큰이 유효하지 않을 경우 로그아웃 처리
-                onLogout();
-            }
+            setUsername("사용자"); // Placeholder for username
+            fetchBlackboxes(); // Fetch blackboxes after setting user
         };
 
         fetchUserData();
@@ -160,7 +173,7 @@ function UserPage({ onLogout }) {
         }
 
         try {
-            const response = await fetch(`${API_URL}/api/status/blackboxes`, {
+            const response = await fetch(`${TEST_API_URL}/api/status/blackboxes`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -176,6 +189,7 @@ function UserPage({ onLogout }) {
                 alert('블랙박스가 성공적으로 등록되었습니다.');
                 setUuid('');
                 setNickname('');
+                fetchBlackboxes(); // Refresh the list after registration
             } else {
                 const errorData = await response.json();
                 alert(`블랙박스 등록 실패: ${JSON.stringify(errorData)}`);
@@ -191,6 +205,28 @@ function UserPage({ onLogout }) {
       <h1>환영합니다, {username}님!</h1>
       <p>로그인 되었습니다.</p>
       <button onClick={onLogout}>로그아웃</button>
+
+      <hr />
+
+      <div>
+        <h2>내 블랙박스 목록</h2>
+        {blackboxes.length > 0 ? (
+          <ul>
+            {blackboxes.map((box) => (
+              <li key={box.uuid}>
+                <strong>{box.nickname}</strong> ({box.uuid})
+                <ul>
+                  <li>상태: {box.health_status}</li>
+                  <li>등록일: {new Date(box.created_at).toLocaleString()}</li>
+                  <li>마지막 접속: {box.last_connected_at ? new Date(box.last_connected_at).toLocaleString() : 'N/A'}</li>
+                </ul>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p>등록된 블랙박스가 없습니다.</p>
+        )}
+      </div>
 
       <hr />
 

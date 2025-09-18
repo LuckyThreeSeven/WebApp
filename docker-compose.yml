@@ -33,5 +33,38 @@ services:
     ports:
       - "5432:5432"
 
+  test-server:
+    build:
+      context: ./backend/test_server
+    env_file:
+      - ./backend/test_server/.env
+    ports:
+      - "4242:4242"
+    volumes:
+      - ./backend/test_server/app:/app
+    depends_on:
+      test-db:
+        condition: service_healthy
+
+  test-db:
+    build:
+      context: ./backend/test_db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: testdb
+      MYSQL_USER: testuser
+      MYSQL_PASSWORD: testpassword
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-prootpassword"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - test-db-data:/var/lib/mysql
+    ports:
+      - "3307:3306"
+
 volumes:
   postgres_data:
+  test-db-data:
