@@ -3,7 +3,7 @@ USE testdb;
 
 CREATE TABLE blackboxes (
     uuid CHAR(36) PRIMARY KEY,
-    user_id BIGINT NOT NULL,
+    user_id CHAR(36) NOT NULL,
     nickname VARCHAR(100) NOT NULL,
     health_status VARCHAR(20) NOT NULL DEFAULT 'HEALTHY',
     last_connected_at DATETIME,

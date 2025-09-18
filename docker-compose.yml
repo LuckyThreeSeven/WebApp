@@ -42,6 +42,9 @@ services:
       - "4242:4242"
     volumes:
       - ./backend/test_server/app:/app
+    depends_on:
+      test-db:
+        condition: service_healthy
 
   test-db:
     build:
@@ -52,6 +55,11 @@ services:
       MYSQL_DATABASE: testdb
       MYSQL_USER: testuser
       MYSQL_PASSWORD: testpassword
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-prootpassword"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     volumes:
       - test-db-data:/var/lib/mysql
     ports:

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 
 // API 기본 URL
 const API_URL = 'http://localhost:8000';
+const TEST_API_URL = 'http://localhost:4242';
 
 // 회원가입/로그인 페이지 컴포넌트
 function AuthPage({ onLoginSuccess }) {
@@ -160,7 +161,7 @@ function UserPage({ onLogout }) {
         }
 
         try {
-            const response = await fetch(`${API_URL}/api/status/blackboxes`, {
+            const response = await fetch(`${TEST_API_URL}/api/status/blackboxes`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
