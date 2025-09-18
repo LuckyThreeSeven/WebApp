@@ -43,5 +43,20 @@ services:
     volumes:
       - ./backend/test_server/app:/app
 
+  test-db:
+    build:
+      context: ./backend/test_db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: testdb
+      MYSQL_USER: testuser
+      MYSQL_PASSWORD: testpassword
+    volumes:
+      - test-db-data:/var/lib/mysql
+    ports:
+      - "3307:3306"
+
 volumes:
   postgres_data:
+  test-db-data:
