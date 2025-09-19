@@ -18,6 +18,7 @@ CREATE TABLE video_metadata (
     duration FLOAT NOT NULL,
     file_type VARCHAR(50) NOT NULL,
     stream_started_at DATETIME NOT NULL,
-    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (blackbox_uuid) REFERENCES blackboxes(uuid)
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
+
+INSERT INTO video_metadata (blackbox_uuid, file_path, file_size, duration, file_type, stream_started_at, created_at) VALUES ('1000', 'blackbox-videos/testvideo.mp4', 1024, 60, 'video/mp4', '2025-09-19 00:00:00', '2025-09-19 00:00:00');

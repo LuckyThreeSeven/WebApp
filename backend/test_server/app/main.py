@@ -184,23 +184,10 @@ async def get_user_blackboxes(user_id: str = Depends(get_current_user_id)):
 async def get_video_metadata(
     blackbox_id: str = Query(..., alias="blackbox_id"),
     date: date = Query(..., alias="date"),
-    user_id: str = Depends(get_current_user_id),
 ):
-    # First, verify that the blackbox_id belongs to the user_id
-    verify_sql = "SELECT COUNT(*) FROM blackboxes WHERE uuid = %s AND user_id = %s"
-    async with pool.acquire() as conn:
-        async with conn.cursor() as cur:
-            await cur.execute(verify_sql, (blackbox_id, user_id))
-            (count,) = await cur.fetchone()
-            if count == 0:
-                raise HTTPException(
-                    status_code=status.HTTP_404_NOT_FOUND,
-                    detail="Blackbox not found or does not belong to user",
-                )
-
     # Then, fetch video metadata for that blackbox and date
     sql = """
-        SELECT id, file_path, duration, created_at, file_size, file_type, stream_started_at
+        SELECT id, file_path as object_key, duration, created_at, file_size, file_type, stream_started_at as recorded_at
         FROM video_metadata
         WHERE blackbox_uuid = %s AND DATE(stream_started_at) = %s
     """

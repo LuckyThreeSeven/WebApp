@@ -23,3 +23,5 @@ db.sqlite3
 /frontend/.env.local
 
 /backend/user_server/users/migrations/
+
+*.pem

@@ -129,6 +129,7 @@ function UserPage({ onLogout }) {
     const [selectedBlackboxId, setSelectedBlackboxId] = useState(null);
     const [selectedDate, setSelectedDate] = useState('');
     const [videoMetadata, setVideoMetadata] = useState([]);
+    const [signedUrl, setSignedUrl] = useState('');
 
     const fetchBlackboxes = async () => {
         const token = localStorage.getItem('access_token');
@@ -206,6 +207,7 @@ function UserPage({ onLogout }) {
         setSelectedBlackboxId(blackboxUuid);
         setSelectedDate(''); // Reset date when new blackbox is selected
         setVideoMetadata([]); // Clear previous metadata
+        setSignedUrl(''); // Clear signed URL when new blackbox is selected
     };
 
     const handleFetchMetadata = async () => {
@@ -227,12 +229,28 @@ function UserPage({ onLogout }) {
             if (response.ok) {
                 const data = await response.json();
                 setVideoMetadata(data);
+                setSignedUrl(''); // Clear signed URL when fetching new metadata
             } else {
                 const errorData = await response.json();
                 alert(`메타데이터 조회 실패: ${JSON.stringify(errorData)}`);
             }
         } catch (error) {
             alert(`메타데이터 조회 중 오류 발생: ${error}`);
+        }
+    };
+
+    const handleMetadataClick = async (objectKey) => {
+        try {
+            const response = await fetch(`http://localhost:8003/api/videos/signed-url?object_key=${objectKey}`);
+            if (response.ok) {
+                const data = await response.json();
+                setSignedUrl(data.signed_url);
+            } else {
+                const errorData = await response.json();
+                alert(`Signed URL 조회 실패: ${JSON.stringify(errorData)}`);
+            }
+        } catch (error) {
+            alert(`Signed URL 조회 중 오류 발생: ${error}`);
         }
     };
 
@@ -278,7 +296,10 @@ function UserPage({ onLogout }) {
                             <ul>
                                 {videoMetadata.map((meta) => (
                                     <li key={meta.id}>
-                                        Object Key: {meta.object_key}<br/>
+                                        <button onClick={() => handleMetadataClick(meta.object_key)}>
+                                            Object Key: {meta.object_key}
+                                        </button>
+                                        <br/>
                                         Duration: {meta.duration} seconds<br/>
                                         Recorded At: {new Date(meta.recorded_at).toLocaleString()}<br/>
                                         File Size: {meta.file_size} bytes<br/>
@@ -286,6 +307,12 @@ function UserPage({ onLogout }) {
                                     </li>
                                 ))}
                             </ul>
+                            {signedUrl && (
+                                <div>
+                                    <h4>Signed URL:</h4>
+                                    <a href={signedUrl} target="_blank" rel="noopener noreferrer">{signedUrl}</a>
+                                </div>
+                            )}
                         </div>
                     ) : (
                         selectedDate && <p>선택된 날짜에 영상 메타데이터가 없습니다.</p>
