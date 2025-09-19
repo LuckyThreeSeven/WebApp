@@ -102,23 +102,30 @@ app.add_middleware(
 # Database connection pool
 pool = None
 
+
 @app.on_event("startup")
 async def startup():
     global pool
     pool = await aiomysql.create_pool(
-        host=DB_HOST, port=DB_PORT,
-        user=DB_USER, password=DB_PASSWORD,
-        db=DB_NAME, autocommit=True
+        host=DB_HOST,
+        port=DB_PORT,
+        user=DB_USER,
+        password=DB_PASSWORD,
+        db=DB_NAME,
+        autocommit=True,
     )
+
 
 @app.on_event("shutdown")
 async def shutdown():
     pool.close()
     await pool.wait_closed()
 
+
 class Blackbox(BaseModel):
     uuid: str
     nickname: str
+
 
 class BlackboxInfo(BaseModel):
     uuid: str
@@ -126,6 +133,7 @@ class BlackboxInfo(BaseModel):
     created_at: datetime
     health_status: str
     last_connected_at: datetime | None = None
+
 
 class VideoMetadataInfo(BaseModel):
     id: int
@@ -136,8 +144,10 @@ class VideoMetadataInfo(BaseModel):
     file_type: str
     recorded_at: datetime
 
+
 # OAuth2 scheme for extracting the token from the Authorization header
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+
 
 async def get_current_user_id(token: str = Depends(oauth2_scheme)) -> str:
     credentials_exception = HTTPException(
@@ -154,9 +164,11 @@ async def get_current_user_id(token: str = Depends(oauth2_scheme)) -> str:
     except jwt.PyJWTError:
         raise credentials_exception
 
+
 @app.get("/")
 def health_check():
     return {"status": "ok"}
+
 
 @app.get("/api/status/blackboxes", response_model=List[BlackboxInfo])
 async def get_user_blackboxes(user_id: str = Depends(get_current_user_id)):
@@ -167,11 +179,12 @@ async def get_user_blackboxes(user_id: str = Depends(get_current_user_id)):
             result = await cur.fetchall()
             return result
 
+
 @app.get("/api/status/metadata", response_model=List[VideoMetadataInfo])
 async def get_video_metadata(
     blackbox_id: str = Query(..., alias="blackbox_id"),
     date: date = Query(..., alias="date"),
-    user_id: str = Depends(get_current_user_id)
+    user_id: str = Depends(get_current_user_id),
 ):
     # First, verify that the blackbox_id belongs to the user_id
     verify_sql = "SELECT COUNT(*) FROM blackboxes WHERE uuid = %s AND user_id = %s"
@@ -180,7 +193,10 @@ async def get_video_metadata(
             await cur.execute(verify_sql, (blackbox_id, user_id))
             (count,) = await cur.fetchone()
             if count == 0:
-                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Blackbox not found or does not belong to user")
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail="Blackbox not found or does not belong to user",
+                )
 
     # Then, fetch video metadata for that blackbox and date
     sql = """
@@ -194,8 +210,11 @@ async def get_video_metadata(
             result = await cur.fetchall()
             return result
 
+
 @app.post("/api/status/blackboxes")
-async def register_blackbox(blackbox: Blackbox, user_id: str = Depends(get_current_user_id)):
+async def register_blackbox(
+    blackbox: Blackbox, user_id: str = Depends(get_current_user_id)
+):
     sql = "INSERT INTO blackboxes (uuid, user_id, nickname) VALUES (%s, %s, %s)"
     async with pool.acquire() as conn:
         async with conn.cursor() as cur:
