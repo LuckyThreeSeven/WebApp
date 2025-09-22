@@ -43,8 +43,8 @@ jobs:
           aws-region: ap-northeast-2
 
       - name: Login to Amazon ECR
-        run: |
-          aws ecr-public get-login-password --region ap-northeast-2 | docker login --username AWS --password-stdin public.ecr.aws
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
 
       - name: Build and Push Docker images for all Dockerfiles
         run: |
