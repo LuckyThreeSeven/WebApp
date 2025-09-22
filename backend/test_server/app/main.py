@@ -159,7 +159,9 @@ async def register_blackbox(
 
 
 @app.delete("/api/status/blackboxes/{blackbox_id}")
-async def delete_blackbox(blackbox_id: str, user_id: str = Depends(get_current_user_id)):
+async def delete_blackbox(
+    blackbox_id: str, user_id: str = Depends(get_current_user_id)
+):
     # Check if the blackbox belongs to the user
     check_sql = "SELECT user_id FROM blackboxes WHERE uuid = %s"
     async with pool.acquire() as conn:

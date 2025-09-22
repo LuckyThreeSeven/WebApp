@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 // API 기본 URL
 const API_URL = 'http://localhost:8000';
 const TEST_API_URL = 'http://localhost:4242';
+const PLAY_API_URL = 'http://localhost:8003';
 
 // 회원가입/로그인 페이지 컴포넌트
 function AuthPage({ onLoginSuccess }) {
@@ -129,7 +130,8 @@ function UserPage({ onLogout }) {
     const [selectedBlackboxId, setSelectedBlackboxId] = useState(null);
     const [selectedDate, setSelectedDate] = useState('');
     const [videoMetadata, setVideoMetadata] = useState([]);
-    const [signedUrl, setSignedUrl] = useState('');
+    const [signedUrls, setSignedUrls] = useState([]);
+    const [currentVideoIndex, setCurrentVideoIndex] = useState(0);
 
     const fetchBlackboxes = async () => {
         const token = localStorage.getItem('access_token');
@@ -207,7 +209,7 @@ function UserPage({ onLogout }) {
         setSelectedBlackboxId(blackboxUuid);
         setSelectedDate(''); // Reset date when new blackbox is selected
         setVideoMetadata([]); // Clear previous metadata
-        setSignedUrl(''); // Clear signed URL when new blackbox is selected
+        setSignedUrls([]); // Clear signed URLs when new blackbox is selected
     };
 
     const handleFetchMetadata = async () => {
@@ -229,7 +231,7 @@ function UserPage({ onLogout }) {
             if (response.ok) {
                 const data = await response.json();
                 setVideoMetadata(data);
-                setSignedUrl(''); // Clear signed URL when fetching new metadata
+                setSignedUrls([]); // Clear signed URLs when fetching new metadata
             } else {
                 const errorData = await response.json();
                 alert(`메타데이터 조회 실패: ${JSON.stringify(errorData)}`);
@@ -239,18 +241,39 @@ function UserPage({ onLogout }) {
         }
     };
 
-    const handleMetadataClick = async (objectKey) => {
+    const handleFetchAllUrls = async () => {
+        if (videoMetadata.length === 0) {
+            alert("먼저 영상 메타데이터를 조회해주세요.");
+            return;
+        }
+
+        const objectKeys = videoMetadata.map(meta => meta.object_key);
+
         try {
-            const response = await fetch(`http://localhost:8003/api/videos/signed-url?object_key=${objectKey}`);
+            const response = await fetch(`${PLAY_API_URL}/get-urls`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ object_keys: objectKeys }),
+            });
+
             if (response.ok) {
                 const data = await response.json();
-                setSignedUrl(data.signed_url);
+                setSignedUrls(data.signed_urls);
+                setCurrentVideoIndex(0);
             } else {
                 const errorData = await response.json();
                 alert(`Signed URL 조회 실패: ${JSON.stringify(errorData)}`);
             }
         } catch (error) {
             alert(`Signed URL 조회 중 오류 발생: ${error}`);
+        }
+    };
+
+    const handleVideoEnded = () => {
+        if (currentVideoIndex < signedUrls.length - 1) {
+            setCurrentVideoIndex(currentVideoIndex + 1);
         }
     };
 
@@ -290,15 +313,14 @@ function UserPage({ onLogout }) {
                     />
                     <button onClick={handleFetchMetadata}>영상 메타데이터 조회</button>
 
-                    {videoMetadata.length > 0 ? (
+                    {videoMetadata.length > 0 && (
                         <div>
+                            <button onClick={handleFetchAllUrls}>모든 URL 가져오기</button>
                             <h4>영상 메타데이터</h4>
                             <ul>
                                 {videoMetadata.map((meta) => (
                                     <li key={meta.id}>
-                                        <button onClick={() => handleMetadataClick(meta.object_key)}>
-                                            Object Key: {meta.object_key}
-                                        </button>
+                                        Object Key: {meta.object_key}
                                         <br/>
                                         Duration: {meta.duration} seconds<br/>
                                         Recorded At: {new Date(meta.recorded_at).toLocaleString()}<br/>
@@ -307,16 +329,21 @@ function UserPage({ onLogout }) {
                                     </li>
                                 ))}
                             </ul>
-                            {signedUrl && (
+                            {signedUrls.length > 0 && (
                                 <div>
-                                    <h4>Signed URL:</h4>
-                                    <a href={signedUrl} target="_blank" rel="noopener noreferrer">{signedUrl}</a>
+                                    <h4>영상 재생</h4>
+                                    <video
+                                        controls
+                                        autoPlay
+                                        src={signedUrls[currentVideoIndex]}
+                                        onEnded={handleVideoEnded}
+                                        style={{ width: '100%', maxWidth: '600px' }}
+                                    />
                                 </div>
                             )}
                         </div>
-                    ) : (
-                        selectedDate && <p>선택된 날짜에 영상 메타데이터가 없습니다.</p>
                     )}
+                    {videoMetadata.length === 0 && selectedDate && <p>선택된 날짜에 영상 메타데이터가 없습니다.</p>}
                 </div>
             )}
           </>

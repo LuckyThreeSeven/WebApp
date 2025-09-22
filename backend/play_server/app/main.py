@@ -5,6 +5,7 @@ from pydantic import BaseModel
 from botocore.signers import CloudFrontSigner
 from cryptography.hazmat.primitives import serialization, hashes
 from cryptography.hazmat.primitives.asymmetric import padding
+from typing import List
 
 # -----------------------------
 # 환경 설정
@@ -68,6 +69,14 @@ class SignedURLResponse(BaseModel):
     signed_url: str
 
 
+class ObjectKeysRequest(BaseModel):
+    object_keys: List[str]
+
+
+class SignedURLListResponse(BaseModel):
+    signed_urls: List[str]
+
+
 # -----------------------------
 # API 엔드포인트
 # -----------------------------
@@ -81,3 +90,9 @@ def get_signed_url(object_key: str = Query(..., description="S3 object key")):
 def get_new_signed_url(object_key: str = Query(..., description="S3 object key")):
     signed_url = generate_signed_url(object_key)
     return {"signed_url": signed_url}
+
+
+@app.post("/get-urls", response_model=SignedURLListResponse)
+def get_signed_urls(request: ObjectKeysRequest):
+    signed_urls = [generate_signed_url(key) for key in request.object_keys]
+    return {"signed_urls": signed_urls}
