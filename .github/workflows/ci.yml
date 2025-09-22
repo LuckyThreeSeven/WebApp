@@ -46,9 +46,16 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
 
+      # Docker info check after login
+      - name: Check Docker login status
+        run: docker info
+
       - name: Build and Push Docker images for all Dockerfiles
+        env:
+          ECR_REGISTRY: public.ecr.aws/k8s0f8l3
+          ECR_REPOSITORY: neves/web-app
+          IMAGE_TAG: ${{ github.sha }}
         run: |
-          # Git SHA를 버전으로 사용
           VERSION=${GITHUB_SHA:0:7}  # 커밋 SHA를 버전으로 사용
 
           # Find all Dockerfiles in the backend directory and build/push them
@@ -61,6 +68,6 @@ jobs:
 
             # Build the Docker image with the subdirectory name in the image name and the commit SHA as the tag
             echo "Building and pushing image for $subdir_name with version $VERSION"
-            docker build -t public.ecr.aws/k8s0f8l3/neves/web-app:$subdir_name-$VERSION -f $dockerfile $dir
-            docker push public.ecr.aws/k8s0f8l3/neves/web-app:$subdir_name-$VERSION
+            docker build -t $ECR_REGISTRY/$ECR_REPOSITORY/$subdir_name:$VERSION -f $dockerfile $dir
+            docker push $ECR_REGISTRY/$ECR_REPOSITORY/$subdir_name:$VERSION
           done
