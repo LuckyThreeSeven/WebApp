@@ -23,3 +23,44 @@ jobs:
         run: |
           chmod +x tests/lint.sh
           ./tests/lint.sh
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build-and-test
+    if: github.ref == 'refs/heads/dev'
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ap-northeast-2
+
+      - name: Login to Amazon ECR
+        run: |
+          aws ecr-public get-login-password --region ap-northeast-2 | docker login --username AWS --password-stdin public.ecr.aws
+
+      - name: Build and Push Docker images for all Dockerfiles
+        run: |
+          # Git SHA를 버전으로 사용
+          VERSION=${GITHUB_SHA:0:7}  # 커밋 SHA를 버전으로 사용
+
+          # Find all Dockerfiles in the backend directory and build/push them
+          for dockerfile in $(find backend -name 'Dockerfile'); do
+            # Get the directory containing the Dockerfile
+            dir=$(dirname $dockerfile)
+
+            # Extract the subdirectory name (parent folder) for the image name
+            subdir_name=$(basename $dir)
+
+            # Build the Docker image with the subdirectory name in the image name and the commit SHA as the tag
+            echo "Building and pushing image for $subdir_name with version $VERSION"
+            docker build -t public.ecr.aws/k8s0f8l3/neves/status-service/$subdir_name:$VERSION -f $dockerfile $dir
+            docker push public.ecr.aws/k8s0f8l3/neves/status-service/$subdir_name:$VERSION
+          done
