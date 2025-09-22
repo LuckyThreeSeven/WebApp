@@ -54,7 +54,7 @@ jobs:
       - name: Build and Push Docker images for all Dockerfiles
         env:
           ECR_REGISTRY: public.ecr.aws/k8s0f8l3
-          ECR_REPOSITORY: neves/web-app
+          ECR_REPOSITORY_NAMESPACE: neves
         run: |
           # Git SHA를 버전으로 사용
           VERSION=${GITHUB_SHA:0:7}  # 커밋 SHA를 버전으로 사용
@@ -69,6 +69,9 @@ jobs:
 
             # Build the Docker image with the subdirectory name in the image name and the commit SHA as the tag
             echo "Building and pushing image for $subdir_name with version $VERSION"
-            docker build --cache-from $ECR_REGISTRY/$ECR_REPOSITORY:$subdir_name-$VERSION -t $ECR_REGISTRY/$ECR_REPOSITORY:$subdir_name-$VERSION -f $dockerfile $dir
-            docker push $ECR_REGISTRY/$ECR_REPOSITORY:$subdir_name-$VERSION
+            docker build --cache-from $ECR_REGISTRY/$ECR_REPOSITORY_NAMESPACE/$subdir_name:$VERSION -t $ECR_REGISTRY/$ECR_REPOSITORY_NAMESPACE/$subdir_name:$VERSION -t $ECR_REGISTRY/$ECR_REPOSITORY/$subdir_name:latest -f $dockerfile $dir
+
+            # Push the image with both version and latest tags
+            docker push $ECR_REGISTRY/$ECR_REPOSITORY_NAMESPACE/$subdir_name:$VERSION
+            docker push $ECR_REGISTRY/$ECR_REPOSITORY_NAMESPACE/$subdir_name:latest
           done
