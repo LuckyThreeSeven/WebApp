@@ -1,73 +1,14 @@
 import os
-import aiomysql
-import jwt
-from fastapi import FastAPI, Depends, HTTPException, status
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.security import OAuth2PasswordBearer
-from pydantic import BaseModel
-from dotenv import load_dotenv
-
-# Load environment variables from .env file
-load_dotenv()
-
-# Database configuration
-DB_HOST = os.getenv("DB_HOST")
-DB_PORT = int(os.getenv("DB_PORT", 3306))
-DB_USER = os.getenv("DB_USER")
-DB_PASSWORD = os.getenv("DB_PASSWORD")
-DB_NAME = os.getenv("DB_NAME")
-
-# JWT configuration
-JWT_SECRET = os.getenv("JWT_SECRET")
-ALGORITHM = "HS256"
-
-app = FastAPI()
-
-# CORS Middleware
-origins = [
-    "http://localhost",
-    "http://localhost:3000",  # React App
-]
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=origins,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-# Database connection pool
-pool = None
-
-
-@app.on_event("startup")
-async def startup():
-    global pool
-    pool = await aiomysql.create_pool(
-        host=DB_HOST,
-        port=DB_PORT,
-        user=DB_USER,
-        password=DB_PASSWORD,
-        db=DB_NAME,
-        autocommit=True,
-    )
-
-
-@app.on_event("shutdown")
-async def shutdown():
-    pool.close()
-    await pool.wait_closed()
-
-
 from datetime import datetime, date
 from typing import List
-
+import aiomysql
+import jwt
+from dotenv import load_dotenv
 from fastapi import FastAPI, Depends, HTTPException, status, Query
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordBearer
-from pydantic import BaseModel, Field
-from dotenv import load_dotenv
+from pydantic import BaseModel
+
 
 # Load environment variables from .env file
 load_dotenv()
@@ -210,6 +151,41 @@ async def register_blackbox(
                 return {
                     "message": f"Blackbox '{blackbox.nickname}' registered successfully for user {user_id}."
                 }
+            except aiomysql.Error as e:
+                raise HTTPException(
+                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                    detail=f"Database error: {e}",
+                )
+
+
+@app.delete("/api/status/blackboxes/{blackbox_id}")
+async def delete_blackbox(
+    blackbox_id: str, user_id: str = Depends(get_current_user_id)
+):
+    # Check if the blackbox belongs to the user
+    check_sql = "SELECT user_id FROM blackboxes WHERE uuid = %s"
+    async with pool.acquire() as conn:
+        async with conn.cursor() as cur:
+            await cur.execute(check_sql, (blackbox_id,))
+            result = await cur.fetchone()
+            if not result or result[0] != user_id:
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail="You do not have permission to delete this blackbox.",
+                )
+
+    # Delete the blackbox
+    delete_sql = "DELETE FROM blackboxes WHERE uuid = %s"
+    async with pool.acquire() as conn:
+        async with conn.cursor() as cur:
+            try:
+                await cur.execute(delete_sql, (blackbox_id,))
+                if cur.rowcount == 0:
+                    raise HTTPException(
+                        status_code=status.HTTP_404_NOT_FOUND,
+                        detail="Blackbox not found.",
+                    )
+                return {"message": f"Blackbox '{blackbox_id}' deleted successfully."}
             except aiomysql.Error as e:
                 raise HTTPException(
                     status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
