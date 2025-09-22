@@ -52,7 +52,7 @@ app.add_middleware(
 # -----------------------------
 # Signed URL 생성 함수
 # -----------------------------
-def generate_signed_url(object_key: str, expire_minutes: int = 1):
+def generate_signed_url(object_key: str, expire_minutes: int = 2):
     expire_time = datetime.datetime.utcnow() + datetime.timedelta(
         minutes=expire_minutes
     )
