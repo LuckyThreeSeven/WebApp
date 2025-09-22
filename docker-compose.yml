@@ -43,20 +43,20 @@ services:
 
   test-server:
     build:
-      context: ./backend/test_server
+      context: ./backend/metadata_test_server
     env_file:
-      - ./backend/test_server/.env
+      - ./backend/metadata_test_server/.env
     ports:
       - "4242:4242"
     volumes:
-      - ./backend/test_server/app:/app
+      - ./backend/metadata_test_server/app:/app
     depends_on:
       test-db:
         condition: service_healthy
 
   test-db:
     build:
-      context: ./backend/test_db
+      context: ./backend/metadata_test_db
     restart: always
     environment:
       MYSQL_ROOT_PASSWORD: rootpassword

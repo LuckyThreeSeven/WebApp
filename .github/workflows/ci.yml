@@ -69,7 +69,7 @@ jobs:
 
             # Build the Docker image with the subdirectory name in the image name and the commit SHA as the tag
             echo "Building and pushing image for $subdir_name with version $VERSION"
-            docker build --cache-from $ECR_REGISTRY/$ECR_REPOSITORY_NAMESPACE/$subdir_name:$VERSION -t $ECR_REGISTRY/$ECR_REPOSITORY_NAMESPACE/$subdir_name:$VERSION -t $ECR_REGISTRY/$ECR_REPOSITORY/$subdir_name:latest -f $dockerfile $dir
+            docker build --cache-from $ECR_REGISTRY/$ECR_REPOSITORY_NAMESPACE/$subdir_name:$VERSION -t $ECR_REGISTRY/$ECR_REPOSITORY_NAMESPACE/$subdir_name:$VERSION -t $ECR_REGISTRY/$ECR_REPOSITORY_NAMESPACE/$subdir_name:latest -f $dockerfile $dir
 
             # Push the image with both version and latest tags
             docker push $ECR_REGISTRY/$ECR_REPOSITORY_NAMESPACE/$subdir_name:$VERSION
