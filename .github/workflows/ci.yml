@@ -2,7 +2,7 @@ name: CI/CD Pipeline
 
 on:
   push:
-    branches: [ "dev" ]
+    branches: [ "39-feat-gitaction의-image관리-workflows-추가" ]
 
 jobs:
   build-and-test:
