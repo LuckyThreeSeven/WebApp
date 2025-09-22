@@ -61,6 +61,6 @@ jobs:
 
             # Build the Docker image with the subdirectory name in the image name and the commit SHA as the tag
             echo "Building and pushing image for $subdir_name with version $VERSION"
-            docker build -t public.ecr.aws/k8s0f8l3/neves/web-app/$subdir_name:$VERSION -f $dockerfile $dir
-            docker push public.ecr.aws/k8s0f8l3/neves/web-app/$subdir_name:$VERSION
+            docker build -t public.ecr.aws/k8s0f8l3/neves/web-app:$subdir_name-$VERSION -f $dockerfile $dir
+            docker push public.ecr.aws/k8s0f8l3/neves/web-app:$subdir_name-$VERSION
           done
