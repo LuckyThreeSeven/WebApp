@@ -2,7 +2,7 @@ name: CI/CD Pipeline
 
 on:
   push:
-    branches: [ "dev" ]
+    branches: [ "dev", "main" ]
 
 jobs:
   build-and-test:
@@ -23,3 +23,55 @@ jobs:
         run: |
           chmod +x tests/lint.sh
           ./tests/lint.sh
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build-and-test
+    if: github.ref == 'refs/heads/main'
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ap-northeast-2
+
+      - name: ECR 로그인
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+        with:
+            registry-type: public
+        env:
+            AWS_DEFAULT_REGION: us-east-1
+            AWS_REGION: us-east-1
+
+      - name: Build and Push Docker images for all Dockerfiles
+        env:
+          ECR_REGISTRY: public.ecr.aws/k8s0f8l3
+          ECR_REPOSITORY_NAMESPACE: neves
+        run: |
+          # Git SHA를 버전으로 사용
+          VERSION=${GITHUB_SHA:0:7}  # 커밋 SHA를 버전으로 사용
+
+          # Find all Dockerfiles in the backend directory and build/push them
+          for dockerfile in $(find backend -name 'Dockerfile'); do
+            # Get the directory containing the Dockerfile
+            dir=$(dirname $dockerfile)
+
+            # Extract the subdirectory name (parent folder) for the image name
+            subdir_name=$(basename $dir)
+
+            # Build the Docker image with the subdirectory name in the image name and the commit SHA as the tag
+            echo "Building and pushing image for $subdir_name with version $VERSION"
+            docker build --cache-from $ECR_REGISTRY/$ECR_REPOSITORY_NAMESPACE/$subdir_name:$VERSION -t $ECR_REGISTRY/$ECR_REPOSITORY_NAMESPACE/$subdir_name:$VERSION -t $ECR_REGISTRY/$ECR_REPOSITORY_NAMESPACE/$subdir_name:latest -f $dockerfile $dir
+
+            # Push the image with both version and latest tags
+            docker push $ECR_REGISTRY/$ECR_REPOSITORY_NAMESPACE/$subdir_name:$VERSION
+            docker push $ECR_REGISTRY/$ECR_REPOSITORY_NAMESPACE/$subdir_name:latest
+          done
