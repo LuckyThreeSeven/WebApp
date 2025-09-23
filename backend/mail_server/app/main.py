@@ -23,8 +23,7 @@ async def send_email_endpoint(email: EmailSchema):
         return {"message": "Email sent successfully"}
     except ValueError as e:
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=str(e),
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e)
         )
     except Exception as e:
         raise HTTPException(
@@ -37,6 +36,7 @@ class VerificationEmailSchema(BaseModel):
     email: EmailStr
     code: str
 
+
 @app.post("/send-verification-email/")
 async def send_verification_email_endpoint(data: VerificationEmailSchema):
     subject = "Your Verification Code"
@@ -46,8 +46,7 @@ async def send_verification_email_endpoint(data: VerificationEmailSchema):
         return {"message": "Verification email sent successfully"}
     except ValueError as e:
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=str(e),
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e)
         )
     except Exception as e:
         raise HTTPException(

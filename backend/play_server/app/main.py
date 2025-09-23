@@ -18,18 +18,13 @@ private_key_path = "/app/private_key.pem"  # ← 경로는 환경에 맞게 조�
 # 프라이빗 키 로드 및 서명자 생성
 # -----------------------------
 with open(private_key_path, "rb") as key_file:
-    private_key = serialization.load_pem_private_key(
-        key_file.read(),
-        password=None,
-    )
+    private_key = serialization.load_pem_private_key(key_file.read(), password=None)
 
 
 # 서명 함수 정의
 def rsa_signer(message):
     return private_key.sign(
-        message,
-        padding.PKCS1v15(),
-        hashes.SHA1(),  # CloudFront는 SHA1 해시를 요구
+        message, padding.PKCS1v15(), hashes.SHA1()  # CloudFront는 SHA1 해시를 요구
     )
 
 
@@ -59,8 +54,7 @@ def generate_signed_url(object_key: str, expire_minutes: int = 1):
     )
 
     signed_url = signer.generate_presigned_url(
-        f"{cloudfront_domain}/{object_key}",
-        date_less_than=expire_time,
+        f"{cloudfront_domain}/{object_key}", date_less_than=expire_time
     )
     return signed_url
 
