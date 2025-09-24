@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 
 // API 기본 URL
 const API_URL = 'http://localhost:8000';
@@ -184,7 +184,7 @@ function UserPage({ onLogout }) {
     const [signedUrls, setSignedUrls] = useState([]);
     const [currentVideoIndex, setCurrentVideoIndex] = useState(0);
 
-    const fetchBlackboxes = async () => {
+    const fetchBlackboxes = useCallback(async () => {
         const token = localStorage.getItem('access_token');
         try {
             const response = await fetch(`${TEST_API_URL}/api/status/blackboxes`, {
@@ -204,7 +204,7 @@ function UserPage({ onLogout }) {
             console.error("Error fetching blackboxes:", error);
             onLogout();
         }
-    };
+    }, [onLogout]);
 
     useEffect(() => {
         const fetchUserData = async () => {
@@ -218,7 +218,7 @@ function UserPage({ onLogout }) {
         };
 
         fetchUserData();
-    }, [onLogout]);
+    }, [onLogout, fetchBlackboxes]);
 
     const handleRegisterBlackbox = async (e) => {
         e.preventDefault();
