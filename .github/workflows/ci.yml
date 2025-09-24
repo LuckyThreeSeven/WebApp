@@ -2,7 +2,7 @@ name: CI/CD Pipeline
 
 on:
   push:
-    branches: [ "dev", "main", "45-feat-add-cicd-for-s3-frontend-service" ]
+    branches: [ "dev", "main" ]
 
 jobs:
   build-and-test:
@@ -79,11 +79,11 @@ jobs:
   s3_frontend_deploy:
     runs-on: ubuntu-latest
     needs: build-and-test
-    # if: github.ref == 'refs/heads/main'
-    # permissions:
-    #   contents: read
-    #   packages: write
-    #   id-token: write
+    if: github.ref == 'refs/heads/main'
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
     steps:
       - name: Check out repository code
         uses: actions/checkout@v4
