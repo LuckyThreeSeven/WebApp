@@ -80,6 +80,11 @@ class SignedURLListResponse(BaseModel):
     signed_urls: List[SignedURLResponse]
 
 
+@app.get("/api/videos")
+def health():
+    return {"status": "ok"}
+
+
 @app.post("/api/videos/url", response_model=SignedURLResponse)
 def get_signed_url(request: ObjectKeyRequest):
     """!
