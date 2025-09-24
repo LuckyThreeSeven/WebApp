@@ -27,10 +27,7 @@ ALGORITHM = "HS256"
 app = FastAPI()
 
 # CORS Middleware
-origins = [
-    "http://localhost",
-    "http://localhost:3000",  # React App
-]
+origins = ["http://localhost", "http://localhost:3000"]  # React App
 
 app.add_middleware(
     CORSMiddleware,

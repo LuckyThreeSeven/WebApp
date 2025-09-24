@@ -33,7 +33,9 @@ class User(AbstractBaseUser, PermissionsMixin):
     uid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     email = models.EmailField(unique=True, db_index=True)
     is_staff = models.BooleanField(default=False)
-    is_active = models.BooleanField(default=True)
+    is_active = models.BooleanField(default=False)
+    verification_code = models.CharField(max_length=5, blank=True, null=True)
+    code_expiry = models.DateTimeField(blank=True, null=True)
 
     objects = UserManager()
 

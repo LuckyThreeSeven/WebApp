@@ -7,9 +7,12 @@ const PLAY_API_URL = 'http://localhost:8003';
 
 // 회원가입/로그인 페이지 컴포넌트
 function AuthPage({ onLoginSuccess }) {
+  const [uiMode, setUiMode] = useState('auth'); // 'auth' or 'verify'
+
   // 회원가입 폼 상태
   const [signupEmail, setSignupEmail] = useState('');
   const [signupPassword, setSignupPassword] = useState('');
+  const [verificationCode, setVerificationCode] = useState('');
 
   // 로그인 폼 상태
   const [loginEmail, setLoginEmail] = useState('');
@@ -30,15 +33,43 @@ function AuthPage({ onLoginSuccess }) {
         }),
       });
       if (response.ok) {
-        alert('회원가입 성공! 이제 로그인해주세요.');
-        setSignupEmail('');
-        setSignupPassword('');
+        alert('인증 코드가 발송되었습니다. 이메일을 확인해주세요.');
+        setUiMode('verify'); // Switch to verification UI
       } else {
         const errorData = await response.json();
         alert(`회원가입 실패: ${JSON.stringify(errorData)}`);
       }
     } catch (error) {
       alert(`회원가입 중 오류 발생: ${error}`);
+    }
+  };
+
+  // 이메일 인증 처리
+  const handleVerify = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await fetch(`${API_URL}/api/verify/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: signupEmail,
+          code: verificationCode,
+        }),
+      });
+      if (response.ok) {
+        alert('계정 인증 성공! 이제 로그인해주세요.');
+        setUiMode('auth'); // Switch back to auth UI
+        setSignupEmail('');
+        setSignupPassword('');
+        setVerificationCode('');
+      } else {
+        const errorData = await response.json();
+        alert(`인증 실패: ${JSON.stringify(errorData)}`);
+      }
+    } catch (error) {
+      alert(`인증 중 오류 발생: ${error}`);
     }
   };
 
@@ -69,6 +100,26 @@ function AuthPage({ onLoginSuccess }) {
       alert(`로그인 중 오류 발생: ${error}`);
     }
   };
+
+  if (uiMode === 'verify') {
+    return (
+      <div>
+        <h2>이메일 인증</h2>
+        <p>{signupEmail}으로 전송된 인증 코드를 입력해주세요.</p>
+        <form onSubmit={handleVerify}>
+          <input
+            type="text"
+            value={verificationCode}
+            onChange={(e) => setVerificationCode(e.target.value)}
+            placeholder="인증 코드 5자리"
+            required
+          />
+          <br />
+          <button type="submit">계정 인증</button>
+        </form>
+      </div>
+    );
+  }
 
   return (
     <div>

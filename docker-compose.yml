@@ -23,6 +23,14 @@ services:
     volumes:
       - ./backend/mail_server/app:/app
 
+  play-server:
+    build:
+      context: ./backend/play_server
+    ports:
+      - "8003:8000"
+    volumes:
+      - ./backend/play_server/app:/app
+  
   db:
     build:
       context: ./backend/user_db
