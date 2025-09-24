@@ -1,92 +1,107 @@
 import datetime
-from fastapi import FastAPI, Query
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from botocore.signers import CloudFrontSigner
 from cryptography.hazmat.primitives import serialization, hashes
 from cryptography.hazmat.primitives.asymmetric import padding
-from typing import List
+from typing import List, Tuple
 
-# -----------------------------
-# 환경 설정
-# -----------------------------
-cloudfront_domain = "https://d122i4q6sbxucu.cloudfront.net"
-key_pair_id = "K16D11NNOJ3QQQ"
-private_key_path = "/app/private_key.pem"  # ← 경로는 환경에 맞게 조정
+from config import settings
 
-# -----------------------------
-# 프라이빗 키 로드 및 서명자 생성
-# -----------------------------
-with open(private_key_path, "rb") as key_file:
-    private_key = serialization.load_pem_private_key(key_file.read(), password=None)
+private_key = serialization.load_pem_private_key(
+    settings.PRIVATE_KEY.encode(), password=None
+)
 
 
-# 서명 함수 정의
-def rsa_signer(message):
-    return private_key.sign(
-        message, padding.PKCS1v15(), hashes.SHA1()  # CloudFront는 SHA1 해시를 요구
-    )
+def rsa_signer(message: bytes) -> bytes:
+    """!
+    @brief
+    @param
+    @return
+    """
+    return private_key.sign(message, padding.PKCS1v15(), hashes.SHA1())
 
 
-# CloudFront 서명자 객체 생성
-signer = CloudFrontSigner(key_pair_id, rsa_signer)
+signer = CloudFrontSigner(settings.KEY_PAIR_ID, rsa_signer)
 
-# -----------------------------
-# FastAPI 앱 생성
-# -----------------------------
 app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=settings.CORS_ALLOWED_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
 
-# -----------------------------
-# Signed URL 생성 함수
-# -----------------------------
-def generate_signed_url(object_key: str, expire_minutes: int = 1):
+def generate_signed_url(
+    object_key: str, expire_minutes: int = 1
+) -> Tuple[str, datetime.datetime]:
+    """!
+    @brief
+    @param
+    @param
+    @return
+    """
     expire_time = datetime.datetime.utcnow() + datetime.timedelta(
         minutes=expire_minutes
     )
 
     signed_url = signer.generate_presigned_url(
-        f"{cloudfront_domain}/{object_key}", date_less_than=expire_time
+        f"{settings.CLOUDFRONT_DOMAIN}/{object_key}", date_less_than=expire_time
     )
-    return signed_url
+    return signed_url, expire_time
 
 
 class SignedURLResponse(BaseModel):
+    """! @brief"""
+
     signed_url: str
+    expire_time: datetime.datetime
+
+
+class ObjectKeyRequest(BaseModel):
+    """! @brief"""
+
+    object_key: str
 
 
 class ObjectKeysRequest(BaseModel):
+    """! @brief"""
+
     object_keys: List[str]
 
 
 class SignedURLListResponse(BaseModel):
-    signed_urls: List[str]
+    """! @brief"""
+
+    signed_urls: List[SignedURLResponse]
 
 
-# -----------------------------
-# API 엔드포인트
-# -----------------------------
-@app.get("/get-url", response_model=SignedURLResponse)
-def get_signed_url(object_key: str = Query(..., description="S3 object key")):
-    signed_url = generate_signed_url(object_key)
-    return {"signed_url": signed_url}
+@app.post("/api/videos/url", response_model=SignedURLResponse)
+def get_signed_url(request: ObjectKeyRequest):
+    """!
+    @brief
+    @param
+    @return
+    """
+    signed_url, expire_time = generate_signed_url(
+        request.object_key, settings.CLOUDFRONT_EXPIRE_TIME
+    )
+    return {"signed_url": signed_url, "expire_time": expire_time}
 
 
-@app.get("/api/videos/signed-url", response_model=SignedURLResponse)
-def get_new_signed_url(object_key: str = Query(..., description="S3 object key")):
-    signed_url = generate_signed_url(object_key)
-    return {"signed_url": signed_url}
-
-
-@app.post("/get-urls", response_model=SignedURLListResponse)
+@app.post("/api/videos/urls", response_model=SignedURLListResponse)
 def get_signed_urls(request: ObjectKeysRequest):
-    signed_urls = [generate_signed_url(key) for key in request.object_keys]
-    return {"signed_urls": signed_urls}
+    """!
+    @brief
+    @param
+    @return
+    """
+    response_urls = []
+    for key in request.object_keys:
+        signed_url, expire_time = generate_signed_url(key)
+        response_urls.append({"signed_url": signed_url, "expire_time": expire_time})
+    return {"signed_urls": response_urls}
