@@ -167,7 +167,7 @@ function UserPage({ onLogout }) {
         };
 
         fetchUserData();
-    }, [onLogout]);
+    }, [onLogout, fetchBlackboxes]);
 
     const handleRegisterBlackbox = async (e) => {
         e.preventDefault();
