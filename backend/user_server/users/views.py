@@ -34,7 +34,8 @@ def signup(request):
 
     if user and user.is_active:
         return Response(
-            {"error": "이미 가입되어 활성화된 이메일입니다."}, status=status.HTTP_400_BAD_REQUEST
+            {"error": "이미 가입되어 활성화된 이메일입니다."},
+            status=status.HTTP_400_BAD_REQUEST,
         )
 
     verification_code = "".join(random.choices(string.digits, k=5))
@@ -67,7 +68,10 @@ def signup(request):
         )
         if response.status_code != 200:
             return Response(
-                {"error": "메일 서버에서 이메일 발송에 실패했습니다.", "detail": response.text},
+                {
+                    "error": "메일 서버에서 이메일 발송에 실패했습니다.",
+                    "detail": response.text,
+                },
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
     except requests.exceptions.RequestException as e:
@@ -77,7 +81,8 @@ def signup(request):
         )
 
     return Response(
-        {"message": "인증 코드가 이메일로 발송되었습니다. 5분 안에 입력해주세요."}, status=status.HTTP_200_OK
+        {"message": "인증 코드가 이메일로 발송되었습니다. 5분 안에 입력해주세요."},
+        status=status.HTTP_200_OK,
     )
 
 
@@ -102,7 +107,8 @@ def verify_email(request):
         user = User.objects.get(email=email, is_active=False)
     except User.DoesNotExist:
         return Response(
-            {"error": "사용자를 찾을 수 없거나 이미 활성화된 계정입니다."}, status=status.HTTP_404_NOT_FOUND
+            {"error": "사용자를 찾을 수 없거나 이미 활성화된 계정입니다."},
+            status=status.HTTP_404_NOT_FOUND,
         )
 
     if user.code_expiry < timezone.now():
@@ -112,7 +118,8 @@ def verify_email(request):
 
     if user.verification_code != code:
         return Response(
-            {"error": "인증 코드가 올바르지 않습니다."}, status=status.HTTP_400_BAD_REQUEST
+            {"error": "인증 코드가 올바르지 않습니다."},
+            status=status.HTTP_400_BAD_REQUEST,
         )
 
     user.is_active = True
@@ -120,4 +127,7 @@ def verify_email(request):
     user.code_expiry = None
     user.save(update_fields=["is_active", "verification_code", "code_expiry"])
 
-    return Response({"message": "이메일 인증이 성공적으로 완료되었습니다."}, status=status.HTTP_200_OK)
+    return Response(
+        {"message": "이메일 인증이 성공적으로 완료되었습니다."},
+        status=status.HTTP_200_OK,
+    )
