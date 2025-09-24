@@ -83,19 +83,19 @@ jobs:
       - name: Check out repository code
         uses: actions/checkout@v4
       
-      - name: 리액트 빌드
+      - name: React Build
         run: |
           npm install
           npm run build
         working-directory: frontend
 
-      - name: AWS IAM 사용자 설정
-        uses: aws-actions/configure-aws-credentials@v2
+      - name: AWS IAM user define
+        uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ap-northeast-2
       
-      - name: S3에 업로드
+      - name: S3 upload
         run: aws s3 sync build/ s3://${{ secrets.AWS_S3_FRONTEND_BUCKET }}
         working-directory: frontend
