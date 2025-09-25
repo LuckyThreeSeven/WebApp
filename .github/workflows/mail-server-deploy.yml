@@ -28,12 +28,41 @@ jobs:
             AWS_DEFAULT_REGION: us-east-1
             AWS_REGION: us-east-1
 
-      - name: Build and Push Docker image for mail_server
+      - name: Build Docker image for mail_server
         env:
           ECR_REGISTRY: public.ecr.aws/k8s0f8l3
           ECR_REPOSITORY_NAMESPACE: neves
           VERSION: ${{ github.sha }}
         run: |
-          docker build --cache-from $ECR_REGISTRY/$ECR_REPOSITORY_NAMESPACE/mail_server:$VERSION -t $ECR_REGISTRY/$ECR_REPOSITORY_NAMESPACE/mail_server:$VERSION -t $ECR_REGISTRY/$ECR_REPOSITORY_NAMESPACE/mail_server:latest -f backend/mail_server/Dockerfile backend/mail_server
+          docker build --cache-from $ECR_REGISTRY/$ECR_REPOSITORY_NAMESPACE/mail_server:$VERSION -t mail-server-image -t $ECR_REGISTRY/$ECR_REPOSITORY_NAMESPACE/mail_server:$VERSION -t $ECR_REGISTRY/$ECR_REPOSITORY_NAMESPACE/mail_server:latest -f backend/mail_server/Dockerfile backend/mail_server
+
+      - name: Run mail_server container
+        env:
+          GMAIL_USER: ${{ secrets.GMAIL_USER }}
+          GMAIL_PASSWORD: ${{ secrets.GMAIL_PASSWORD }}
+        run: |
+          docker run -d --name mail-server-container \
+            -p 8001:8000 \
+            -e GMAIL_USER \
+            -e GMAIL_PASSWORD \
+            mail-server-image
+
+      - name: Make test script executable
+        run: chmod +x ./tests/mail_server_test.sh
+
+      - name: Run mail_server test
+        run: ./tests/mail_server_test.sh
+
+      - name: Display Docker logs
+        if: always()
+        run: docker logs mail-server-container
+
+      - name: Push Docker image to ECR
+        if: success()
+        env:
+          ECR_REGISTRY: public.ecr.aws/k8s0f8l3
+          ECR_REPOSITORY_NAMESPACE: neves
+          VERSION: ${{ github.sha }}
+        run: |
           docker push $ECR_REGISTRY/$ECR_REPOSITORY_NAMESPACE/mail_server:$VERSION
           docker push $ECR_REGISTRY/$ECR_REPOSITORY_NAMESPACE/mail_server:latest
