@@ -7,8 +7,8 @@ echo "--- Health Check Begin ---"
 echo "Waiting for server to start..."
 sleep 30
 
-echo "Send Request to http://localhost:8000/api/email"
-RESPONSE=$(curl -s http://localhost:8000/api/email)
+echo "Send Request to http://localhost:8001/api/email"
+RESPONSE=$(curl -s http://localhost:8001/api/email)
 EXPECTED_RESPONSE='{"status":"ok"}'
 
 echo "Received response: $RESPONSE"
