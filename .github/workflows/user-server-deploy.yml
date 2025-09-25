@@ -2,7 +2,7 @@ name: Deploy User Server
 
 on:
   push:
-    branches: [ "63-feat-update-cicd-for-user-server" ]
+    branches: [ "main" ]
     paths:
       - 'backend/user_server/**'
 
