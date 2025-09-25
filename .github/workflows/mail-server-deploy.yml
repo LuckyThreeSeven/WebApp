@@ -2,7 +2,7 @@ name: Deploy Mail Server
 
 on:
   push:
-    branches: [ "60-feat-update-mail_server-cicd" ]
+    branches: [ "main" ]
     paths:
       - 'backend/mail_server/**'
 
