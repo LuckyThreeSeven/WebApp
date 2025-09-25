@@ -25,3 +25,7 @@ jobs:
 
     - name: Run play_server test
       run: ./tests/play_server_test.sh
+
+    - name: Display Docker logs
+      if: always()
+      run: docker logs play-server-container
