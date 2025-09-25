@@ -18,12 +18,18 @@ jobs:
       run: docker build -t play-server-image ./backend/play_server
 
     - name: Run play_server container
+      env:
+        CLOUDFRONT_DOMAIN: ${{ secrets.CLOUDFRONT_DOMAIN }}
+        CORS_ALLOWED_ORIGINS: ${{ secrets.CORS_ALLOWED_ORIGINS }}
+        KEY_PAIR_ID: ${{ secrets.KEY_PAIR_ID }}
+        S3_PRIVATE_KEY: ${{ secrets.S3_PRIVATE_KEY }}
       run: |
         docker run -d --name play-server-container \
           -p 8000:8000 \
-          -e CLOUDFRONT_DOMAIN=dummy_domain \
-          -e KEY_PAIR_ID=dummy_key_pair_id \
-          -e S3_PRIVATE_KEY=dummy_s3_private_key \
+          -e CLOUDFRONT_DOMAIN \
+          -e CORS_ALLOWED_ORIGINS \
+          -e KEY_PAIR_ID \
+          -e S3_PRIVATE_KEY \
           play-server-image
 
     - name: Make test script executable
