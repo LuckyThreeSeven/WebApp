@@ -24,8 +24,6 @@ jobs:
           chmod +x tests/lint.sh
           ./tests/lint.sh
 
-
-
   server_deploy:
     runs-on: ubuntu-latest
     needs: build-and-test
