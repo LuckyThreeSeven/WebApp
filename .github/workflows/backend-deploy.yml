@@ -24,7 +24,7 @@ jobs:
             mail_server: backend/mail_server/**
             play_server: backend/play_server/**
       - name: Debug step outputs
-        run: echo "play_server_changed is: ${{ steps.changed-files.outputs.play_server_changed }}"
+        run: echo "play_server_changed is ${{ steps.changed-files.outputs.play_server_changed }}"
 
   deploy-user-server:
     needs: changes

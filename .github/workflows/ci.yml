@@ -2,7 +2,7 @@ name: CI/CD Pipeline
 
 on:
   push:
-    branches: [ "dev", "main", "53-feat-update-cicd-with-gitaction" ]
+    branches: [ "dev", "main" ]
 
 jobs:
   build-and-test:
