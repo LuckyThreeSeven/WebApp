@@ -6,6 +6,7 @@ from .serializers import UserCreateSerializer, VerifyEmailSerializer
 from drf_spectacular.utils import extend_schema
 import random
 import string
+import os
 import requests
 from django.utils import timezone
 from datetime import timedelta
@@ -65,7 +66,7 @@ def signup(request):
     # Call mail-server to send the email
     try:
         # This is an assumed endpoint for the mail-server.
-        mail_server_url = "http://mail-server:8000/api/email"
+        mail_server_url = os.getenv("MAIL_API_URL","http://mail-server:8000/api/email")
         response = requests.post(
             mail_server_url,
             json={
