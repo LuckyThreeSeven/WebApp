@@ -2,7 +2,7 @@ name: Frontend Deploy
 
 on:
   push:
-    branches: [ "53-feat-update-cicd-with-gitaction" ]
+    branches: [ "main" ]
     paths:
       - 'frontend/**'
 

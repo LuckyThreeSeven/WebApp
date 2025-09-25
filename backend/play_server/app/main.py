@@ -8,7 +8,7 @@ from cryptography.hazmat.primitives.asymmetric import padding
 from typing import List, Tuple
 
 from config import settings
-# test
+
 private_key = serialization.load_pem_private_key(
     settings.S3_PRIVATE_KEY.encode(), password=None
 )
