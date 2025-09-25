@@ -11,15 +11,36 @@ class EmailSchema(BaseModel):
     context: str
 
 
+class EmailRequest(BaseModel):
+    to: str  # user_id
+    format: str  # 유형
+    parameters: list  # 메타데이터 값
+
+
+# format 유형 설명
+# BLACKBOX_UNCONNECTED: 10시간 이상 블랙박스 연결 끊김
+# LOGIN_AUTH: 로그인 인증 요청
+# SIGNUP_AUTH: 회원가입 인증 요청
+
+
 @app.get("/api/email")
 def health():
     return {"status": "ok"}
 
 
-@app.post("/send-email")
-async def send_email_endpoint(email: EmailSchema):
+@app.post("/api/email")
+async def send_email(email: EmailRequest):
     try:
-        send_gmail(to=email.to, subject=email.subject, context=email.context)
+        email_to_send = EmailSchema(
+            to=email.to,
+            subject=f"[{email.format}] {email.to}",
+            context=str(email.parameters),
+        )
+        send_gmail(
+            to=email_to_send.to,
+            subject=email_to_send.subject,
+            context=email_to_send.context,
+        )
         return {"message": "Email sent successfully"}
     except ValueError as e:
         raise HTTPException(
@@ -29,27 +50,4 @@ async def send_email_endpoint(email: EmailSchema):
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to send email: {e}",
-        )
-
-
-class VerificationEmailSchema(BaseModel):
-    email: EmailStr
-    code: str
-
-
-@app.post("/send-verification-email/")
-async def send_verification_email_endpoint(data: VerificationEmailSchema):
-    subject = "Your Verification Code"
-    context = f"Your verification code is: {data.code}"
-    try:
-        send_gmail(to=data.email, subject=subject, context=context)
-        return {"message": "Verification email sent successfully"}
-    except ValueError as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e)
-        )
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to send verification email: {e}",
         )
