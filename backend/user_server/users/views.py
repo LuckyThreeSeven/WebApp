@@ -11,6 +11,11 @@ from django.utils import timezone
 from datetime import timedelta
 
 
+@api_view(["GET"])
+def health(request):
+    return Response({"status": "ok"})
+
+
 @extend_schema(
     request=UserCreateSerializer,
     responses={
