@@ -2,7 +2,7 @@ name: Deploy Play Server
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "53-feat-update-cicd-with-gitaction" ]
     paths:
       - 'backend/play_server/**'
 
