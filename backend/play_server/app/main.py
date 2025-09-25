@@ -13,6 +13,7 @@ private_key = serialization.load_pem_private_key(
     settings.S3_PRIVATE_KEY.encode(), password=None
 )
 
+
 def rsa_signer(message: bytes) -> bytes:
     """!
     @brief
