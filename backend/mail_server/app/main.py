@@ -12,15 +12,9 @@ class EmailSchema(BaseModel):
 
 
 class EmailRequest(BaseModel):
-    to: str  # user_id
-    format: str  # 유형
-    parameters: list  # 메타데이터 값
-
-
-# format 유형 설명
-# BLACKBOX_UNCONNECTED: 10시간 이상 블랙박스 연결 끊김
-# LOGIN_AUTH: 로그인 인증 요청
-# SIGNUP_AUTH: 회원가입 인증 요청
+    to: str
+    format: str
+    parameters: list
 
 
 @app.get("/api/email")
