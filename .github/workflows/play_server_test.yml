@@ -1,0 +1,27 @@
+name: Play Server Test
+
+on:
+  push:
+    branches: [ main, dev ]
+  pull_request:
+    branches: [ main, dev ]
+
+jobs:
+  test-play-server:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Build play_server Docker image
+      run: docker build -t play-server-image ./backend/play_server
+
+    - name: Run play_server container
+      run: docker run -d --name play-server-container -p 8000:8000 play-server-image
+
+    - name: Make test script executable
+      run: chmod +x ./tests/play_server_test.sh
+
+    - name: Run play_server test
+      run: ./tests/play_server_test.sh
