@@ -1,0 +1,124 @@
+name: Deploy Servers
+
+on:
+  push:
+    branches: [ "53-feat-update-cicd-with-gitaction" ]
+    paths:
+      - 'backend/**'
+
+jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      user_server: ${{ steps.changed-files.outputs.user_server_changed }}
+      mail_server: ${{ steps.changed-files.outputs.mail_server_changed }}
+      play_server: ${{ steps.changed-files.outputs.play_server_changed }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Get changed files
+        id: changed-files
+        uses: tj-actions/changed-files@v41
+        with:
+          files: |
+            user_server: backend/user_server/**
+            mail_server: backend/mail_server/**
+            play_server: backend/play_server/**
+
+  deploy-user-server:
+    needs: changes
+    if: needs.changes.outputs.user_server == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ap-northeast-2
+
+      - name: ECR Login
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+        with:
+            registry-type: public
+        env:
+            AWS_DEFAULT_REGION: us-east-1
+            AWS_REGION: us-east-1
+
+      - name: Build and Push Docker image for user_server
+        env:
+          ECR_REGISTRY: public.ecr.aws/k8s0f8l3
+          ECR_REPOSITORY_NAMESPACE: neves
+          VERSION: ${{ github.sha }}
+        run: |
+          docker build --cache-from $ECR_REGISTRY/$ECR_REPOSITORY_NAMESPACE/user_server:$VERSION -t $ECR_REGISTRY/$ECR_REPOSITORY_NAMESPACE/user_server:$VERSION -t $ECR_REGISTRY/$ECR_REPOSITORY_NAMESPACE/user_server:latest -f backend/user_server/Dockerfile backend/user_server
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY_NAMESPACE/user_server:$VERSION
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY_NAMESPACE/user_server:latest
+
+  deploy-mail-server:
+    needs: changes
+    if: needs.changes.outputs.mail_server == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ap-northeast-2
+
+      - name: ECR Login
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+        with:
+            registry-type: public
+        env:
+            AWS_DEFAULT_REGION: us-east-1
+            AWS_REGION: us-east-1
+
+      - name: Build and Push Docker image for mail_server
+        env:
+          ECR_REGISTRY: public.ecr.aws/k8s0f8l3
+          ECR_REPOSITORY_NAMESPACE: neves
+          VERSION: ${{ github.sha }}
+        run: |
+          docker build --cache-from $ECR_REGISTRY/$ECR_REPOSITORY_NAMESPACE/mail_server:$VERSION -t $ECR_REGISTRY/$ECR_REPOSITORY_NAMESPACE/mail_server:$VERSION -t $ECR_REGISTRY/$ECR_REPOSITORY_NAMESPACE/mail_server:latest -f backend/mail_server/Dockerfile backend/mail_server
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY_NAMESPACE/mail_server:$VERSION
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY_NAMESPACE/mail_server:latest
+
+  deploy-play-server:
+    needs: changes
+    if: needs.changes.outputs.play_server == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ap-northeast-2
+
+      - name: ECR Login
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+        with:
+            registry-type: public
+        env:
+            AWS_DEFAULT_REGION: us-east-1
+            AWS_REGION: us-east-1
+
+      - name: Build and Push Docker image for play_server
+        env:
+          ECR_REGISTRY: public.ecr.aws/k8s0f8l3
+          ECR_REPOSITORY_NAMESPACE: neves
+          VERSION: ${{ github.sha }}
+        run: |
+          docker build --cache-from $ECR_REGISTRY/$ECR_REPOSITORY_NAMESPACE/play_server:$VERSION -t $ECR_REGISTRY/$ECR_REPOSITORY_NAMESPACE/play_server:$VERSION -t $ECR_REGISTRY/$ECR_REPOSITORY_NAMESPACE/play_server:latest -f backend/play_server/Dockerfile backend/play_server
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY_NAMESPACE/play_server:$VERSION
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY_NAMESPACE/play_server:latest
