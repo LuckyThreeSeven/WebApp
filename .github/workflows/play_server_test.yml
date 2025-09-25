@@ -18,7 +18,13 @@ jobs:
       run: docker build -t play-server-image ./backend/play_server
 
     - name: Run play_server container
-      run: docker run -d --name play-server-container -p 8000:8000 play-server-image
+      run: |
+        docker run -d --name play-server-container \
+          -p 8000:8000 \
+          -e CLOUDFRONT_DOMAIN=${{ secrets.CLOUDFRONT_DOMAIN }} \
+          -e KEY_PAIR_ID=${{ secrets.KEY_PAIR_ID }} \
+          -e S3_PRIVATE_KEY=${{ secrets.S3_PRIVATE_KEY }} \
+          play-server-image
 
     - name: Make test script executable
       run: chmod +x ./tests/play_server_test.sh
