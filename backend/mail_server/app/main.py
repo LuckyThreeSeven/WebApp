@@ -11,8 +11,8 @@ class EmailSchema(BaseModel):
     context: str
 
 
-@app.get("/")
-def health_check():
+@app.get("/api/email")
+def health():
     return {"status": "ok"}
 
 
