@@ -95,7 +95,7 @@ jobs:
     # if: needs.changes.outputs.play_server == 'true' # Temporarily disabled for debugging
     runs-on: ubuntu-latest
     steps:
-      - name: Debug: Print changes output
+      - name: Debug Print changes output
         run: echo "The value for play_server is: ${{ needs.changes.outputs.play_server }}"
       - uses: actions/checkout@v4
 
