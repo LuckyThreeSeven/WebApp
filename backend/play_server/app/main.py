@@ -10,7 +10,7 @@ from typing import List, Tuple
 from config import settings
 
 private_key = serialization.load_pem_private_key(
-    settings.PRIVATE_KEY.encode(), password=None
+    settings.S3_PRIVATE_KEY.encode(), password=None
 )
 
 
@@ -78,6 +78,11 @@ class SignedURLListResponse(BaseModel):
     """! @brief"""
 
     signed_urls: List[SignedURLResponse]
+
+
+@app.get("/api/videos")
+def health():
+    return {"status": "ok"}
 
 
 @app.post("/api/videos/url", response_model=SignedURLResponse)
