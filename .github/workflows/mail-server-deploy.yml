@@ -42,7 +42,7 @@ jobs:
           GMAIL_PASSWORD: ${{ secrets.GMAIL_PASSWORD }}
         run: |
           docker run -d --name mail-server-container \
-            -p 8000:8000 \
+            -p 8001:8000 \
             -e GMAIL_USER \
             -e GMAIL_PASSWORD \
             mail-server-image
