@@ -96,7 +96,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Debug Print changes output
-        run: echo "The value for play_server is: ${{ needs.changes.outputs.play_server }}"
+        run: echo "The value for play_server is ${{ needs.changes.outputs.play_server }}"
       - uses: actions/checkout@v4
 
       - name: Configure AWS credentials
