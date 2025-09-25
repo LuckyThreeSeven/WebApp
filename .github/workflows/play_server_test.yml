@@ -21,9 +21,9 @@ jobs:
       run: |
         docker run -d --name play-server-container \
           -p 8000:8000 \
-          -e CLOUDFRONT_DOMAIN=${{ secrets.CLOUDFRONT_DOMAIN }} \
-          -e KEY_PAIR_ID=${{ secrets.KEY_PAIR_ID }} \
-          -e S3_PRIVATE_KEY=${{ secrets.S3_PRIVATE_KEY }} \
+          -e CLOUDFRONT_DOMAIN=dummy_domain \
+          -e KEY_PAIR_ID=dummy_key_pair_id \
+          -e S3_PRIVATE_KEY=dummy_s3_private_key \
           play-server-image
 
     - name: Make test script executable
