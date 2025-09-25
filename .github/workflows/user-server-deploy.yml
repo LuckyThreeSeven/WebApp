@@ -9,6 +9,22 @@ on:
 jobs:
   deploy-user-server:
     runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:13-alpine
+        env:
+          POSTGRES_DB: testdb
+          POSTGRES_USER: testuser
+          POSTGRES_PASSWORD: testpassword
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U testuser -d testdb"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     steps:
       - uses: actions/checkout@v4
 
@@ -28,12 +44,46 @@ jobs:
             AWS_DEFAULT_REGION: us-east-1
             AWS_REGION: us-east-1
 
-      - name: Build and Push Docker image for user_server
+      - name: Build Docker image for user_server
         env:
           ECR_REGISTRY: public.ecr.aws/k8s0f8l3
           ECR_REPOSITORY_NAMESPACE: neves
           VERSION: ${{ github.sha }}
         run: |
-          docker build --cache-from $ECR_REGISTRY/$ECR_REPOSITORY_NAMESPACE/user_server:$VERSION -t $ECR_REGISTRY/$ECR_REPOSITORY_NAMESPACE/user_server:$VERSION -t $ECR_REGISTRY/$ECR_REPOSITORY_NAMESPACE/user_server:latest -f backend/user_server/Dockerfile backend/user_server
+          docker build --cache-from $ECR_REGISTRY/$ECR_REPOSITORY_NAMESPACE/user_server:$VERSION -t user-server-image -t $ECR_REGISTRY/$ECR_REPOSITORY_NAMESPACE/user_server:$VERSION -t $ECR_REGISTRY/$ECR_REPOSITORY_NAMESPACE/user_server:latest -f backend/user_server/Dockerfile backend/user_server
+
+      - name: Run user_server container
+        env:
+          DB_HOST: 127.0.0.1 # Connect to the service container on localhost
+          DB_NAME: testdb
+          DB_PASSWORD: testpassword
+          DB_PORT: 5432
+          DB_USER: testuser
+        run: |
+          docker run -d --name user-server-container --network host \
+            -e DB_HOST \
+            -e DB_NAME \
+            -e DB_PASSWORD \
+            -e DB_PORT \
+            -e DB_USER \
+            user-server-image
+
+      - name: Make test script executable
+        run: chmod +x ./tests/user_server_test.sh
+
+      - name: Run user_server test
+        run: ./tests/user_server_test.sh
+
+      - name: Display Docker logs
+        if: always()
+        run: docker logs user-server-container
+
+      - name: Push Docker image to ECR
+        if: success()
+        env:
+          ECR_REGISTRY: public.ecr.aws/k8s0f8l3
+          ECR_REPOSITORY_NAMESPACE: neves
+          VERSION: ${{ github.sha }}
+        run: |
           docker push $ECR_REGISTRY/$ECR_REPOSITORY_NAMESPACE/user_server:$VERSION
           docker push $ECR_REGISTRY/$ECR_REPOSITORY_NAMESPACE/user_server:latest
