@@ -4,7 +4,6 @@ import React, { useState, useEffect } from 'react';
 const API_URL = 'http://localhost:8000';
 
 // --- API 호출 함수들 ---
-// 이 함수들은 나중에 실제 API 주소로 교체될 수 있습니다.
 
 /**
  * [1단계] 입력된 이메일로 인증 코드를 발송하는 API를 호출합니다.
@@ -12,10 +11,13 @@ const API_URL = 'http://localhost:8000';
  * @returns {Promise<Response>} - fetch API의 Response 객체
  */
 const requestVerificationCode = async (email) => {
-  // TODO: 나중에 이 API 주소를 실제 주소로 변경하세요. (예: /api/send-verification-code/)
-  console.log(`API CALL: Sending verification code to ${email}`);
-  // 임시 성공 응답
-  return new Response(JSON.stringify({ message: "Code sent" }), { status: 200 });
+  const response = await fetch(`${API_URL}/api/signup/verify-email/`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email }),
+    credentials: 'include',
+  });
+  return response;
 };
 
 /**
@@ -25,14 +27,13 @@ const requestVerificationCode = async (email) => {
  * @returns {Promise<Response>} - fetch API의 Response 객체
  */
 const submitVerificationCode = async (email, code) => {
-  // TODO: 나중에 이 API 주소를 실제 주소로 변경하세요. (예: /api/verify-code/)
-  console.log(`API CALL: Verifying code ${code} for ${email}`);
-  // 임시 성공 응답
-  if (code === "12345") { // 테스트를 위한 임시 코드
-    return new Response(JSON.stringify({ message: "Verification successful" }), { status: 200 });
-  } else {
-    return new Response(JSON.stringify({ message: "Invalid code" }), { status: 400 });
-  }
+  const response = await fetch(`${API_URL}/api/signup/confirm-email/`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, code }),
+    credentials: 'include',
+  });
+  return response;
 };
 
 /**
@@ -42,12 +43,11 @@ const submitVerificationCode = async (email, code) => {
  * @returns {Promise<Response>} - fetch API의 Response 객체
  */
 const completeSignUp = async (email, password) => {
-  // TODO: 나중에 이 API 주소를 실제 주소로 변경하세요. (예: /api/complete-signup/)
-  console.log(`API CALL: Completing sign up for ${email}`);
   const response = await fetch(`${API_URL}/api/signup/`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ email, password }),
+    credentials: 'include',
   });
   return response;
 };
