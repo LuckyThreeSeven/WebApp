@@ -357,23 +357,3 @@ def login_verify(request):
         status=status.HTTP_200_OK,
     )
 
-
-@extend_schema(
-    responses={
-        200: {"description": "Logout successful"},
-    },
-)
-@api_view(["POST"])
-def logout(request):
-    pass
-
-
-@extend_schema(
-    responses={
-        200: UserSerializer,
-        401: {"description": "Unauthorized"},
-    },
-)
-@api_view(["GET"])
-def get_user_info(request):
-    pass
