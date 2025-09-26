@@ -1,0 +1,230 @@
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap');
+
+:root {
+  --primary-color: #16a085;
+  --secondary-color: #1abc9c;
+  --background-color: #f4f5f7;
+  --card-background: #ffffff;
+  --text-color: #2d3436;
+  --input-border-color: #dfe6e9;
+  --danger-color: #d63031;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Noto Sans KR', sans-serif;
+  background-color: var(--background-color);
+  color: var(--text-color);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+}
+
+.app-container {
+  width: 100%;
+  padding: 1rem; /* 모바일 화면을 위해 패딩 조정 */
+}
+
+
+/* --- 로그인 페이지 2단 레이아웃 --- */
+.login-container {
+  display: flex;
+  width: 100%;
+  max-width: 960px; /* 더 넓은 컨테이너 */
+  min-height: 600px;
+  margin: auto;
+  background-color: var(--card-background);
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.login-image-section {
+  width: 45%;
+  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+  color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 2rem;
+}
+
+.login-image-content {
+  text-align: center;
+}
+
+.login-image-content h1 {
+  margin-top: 1.5rem;
+  font-size: 1.8rem;
+}
+
+.login-image-content p {
+  margin-top: 0.5rem;
+  font-size: 1rem;
+  opacity: 0.9;
+}
+
+.login-form-section {
+  width: 55%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* --- 인증 페이지 공통 스타일 --- */
+.auth-wrapper {
+  width: 100%;
+  max-width: 400px; /* 폼의 최대 너비 고정 */
+  padding: 2.5rem;
+  border-radius: 12px;
+}
+
+/* 회원가입 페이지에서는 wrapper가 그림자를 갖도록 함 */
+.app-container > .auth-wrapper {
+    background-color: var(--card-background);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    margin: auto;
+}
+
+
+.auth-wrapper h2 {
+  text-align: center;
+  margin-bottom: 1.5rem;
+  color: var(--primary-color);
+  font-weight: 700;
+}
+
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.auth-form p {
+    text-align: center;
+    font-size: 0.9rem;
+    color: #636e72;
+}
+
+.auth-input {
+  width: 100%;
+  padding: 0.8rem 1rem;
+  border: 1px solid var(--input-border-color);
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.auth-input:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(22, 160, 133, 0.2);
+}
+
+.auth-button {
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  padding: 0.9rem;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.auth-button:hover {
+  background-color: #138d75;
+}
+
+.toggle-auth-section {
+  text-align: center;
+  margin-top: 1.5rem;
+  font-size: 0.9rem;
+}
+
+.toggle-auth-button {
+  background: none;
+  border: none;
+  color: var(--primary-color);
+  font-weight: 700;
+  cursor: pointer;
+  font-size: 0.9rem;
+  padding: 0.2rem;
+}
+
+.toggle-auth-button:hover {
+    text-decoration: underline;
+}
+
+/* --- 유저 페이지 스타일 --- */
+.user-page-wrapper {
+    background-color: var(--card-background);
+    padding: 2.5rem;
+    border-radius: 12px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    text-align: center;
+}
+
+.user-page-wrapper h1 {
+    margin-bottom: 1.5rem;
+}
+
+.logout-button {
+    background-color: var(--danger-color);
+    color: white;
+    border: none;
+    padding: 0.8rem 1.5rem;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.logout-button:hover {
+    background-color: #b32a2b;
+}
+
+/* --- 유효성 검사 및 기타 --- */
+.input-group {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.error-message {
+  color: var(--danger-color);
+  font-size: 0.8rem;
+  padding-left: 0.2rem;
+  margin-top: 0.25rem;
+  text-align: left;
+}
+
+.auth-button:disabled {
+  background-color: #bdc3c7;
+  cursor: not-allowed;
+}
+
+/* --- 반응형 디자인 --- */
+@media (max-width: 860px) {
+  .login-image-section {
+    display: none; /* 화면이 작아지면 이미지 섹션 숨김 */
+  }
+
+  .login-form-section {
+    width: 100%;
+  }
+
+  .login-container {
+    max-width: 450px; /* 폼 섹션만 남으므로 너비 줄임 */
+    min-height: auto;
+  }
+}
+
