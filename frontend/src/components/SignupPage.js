@@ -64,6 +64,8 @@ function SignupPage({ onSwitchToLogin }) {
   // 유효성 검사 및 오류 메시지 상태
   const [emailError, setEmailError] = useState('');
   const [passwordError, setPasswordError] = useState('');
+  const [codeError, setCodeError] = useState('');
+  const [isSendingCode, setIsSendingCode] = useState(false); // 코드 전송 로딩 상태 추가
 
   const [isEmailVerified, setIsEmailVerified] = useState(false);
 
@@ -73,7 +75,7 @@ function SignupPage({ onSwitchToLogin }) {
     if (signupEmail && !regex.test(signupEmail)) {
       setEmailError('올바른 이메일 형식이 아닙니다.');
     } else {
-      setEmailError('');
+      setEmailError(''); // 형식에 맞으면 에러 메시지 초기화
     }
   }, [signupEmail]);
 
@@ -90,25 +92,30 @@ function SignupPage({ onSwitchToLogin }) {
   const handleSendCode = async (e) => {
     e.preventDefault();
     if (emailError || !signupEmail) {
-      alert('올바른 이메일을 입력해주세요.');
       return;
     }
+    setIsSendingCode(true); // 로딩 상태 시작
     try {
       const response = await requestVerificationCode(signupEmail);
       if (response.ok) {
         alert('인증 코드가 발송되었습니다. 이메일을 확인해주세요.');
         setUiMode('enterCode');
       } else {
-        alert('인증 코드 발송에 실패했습니다.');
+        // API로부터 받은 에러 메시지를 상태에 저장
+        const errorData = await response.json();
+        setEmailError(errorData.error || '인증 코드 발송에 실패했습니다.');
       }
     } catch (error) {
-      alert(`오류 발생: ${error}`);
+      setEmailError('서버에 연결할 수 없습니다.');
+    } finally {
+      setIsSendingCode(false); // 로딩 상태 종료 (성공/실패 무관)
     }
   };
 
   // 2. 인증 코드 확인 처리
   const handleVerifyCode = async (e) => {
     e.preventDefault();
+    setCodeError(''); // 시도 시 이전 에러 초기화
     try {
       const response = await submitVerificationCode(signupEmail, verificationCode);
       if (response.ok) {
@@ -116,10 +123,11 @@ function SignupPage({ onSwitchToLogin }) {
         setIsEmailVerified(true);
         setUiMode('enterPassword');
       } else {
-        alert('인증 코드가 올바르지 않습니다.');
+        const errorData = await response.json();
+        setCodeError(errorData.error || '인증 코드가 올바르지 않습니다.');
       }
     } catch (error) {
-      alert(`오류 발생: ${error}`);
+      setCodeError('서버에 연결할 수 없습니다.');
     }
   };
   
@@ -127,7 +135,6 @@ function SignupPage({ onSwitchToLogin }) {
   const handleSignUp = async (e) => {
     e.preventDefault();
     if (passwordError || signupPassword !== signupPasswordConfirm) {
-      alert('비밀번호를 확인해주세요.');
       return;
     }
     try {
@@ -137,7 +144,7 @@ function SignupPage({ onSwitchToLogin }) {
         onSwitchToLogin();
       } else {
         const errorData = await response.json();
-        alert(`회원가입 실패: ${JSON.stringify(errorData)}`);
+        alert(`회원가입 실패: ${errorData.error || JSON.stringify(errorData)}`);
       }
     } catch (error) {
       alert(`회원가입 중 오류 발생: ${error}`);
@@ -160,13 +167,17 @@ function SignupPage({ onSwitchToLogin }) {
             onChange={(e) => setSignupEmail(e.target.value)}
             placeholder="이메일"
             required
-            disabled={uiMode !== 'enterEmail'} // 코드 발송 후 비활성화
+            disabled={uiMode !== 'enterEmail'}
           />
           {emailError && <p className="error-message">{emailError}</p>}
         </div>
         {uiMode === 'enterEmail' && (
-          <button type="submit" className="auth-button" disabled={!signupEmail || emailError}>
-            인증 코드 발송
+          <button 
+            type="submit" 
+            className="auth-button" 
+            disabled={!signupEmail || emailError || isSendingCode}
+          >
+            {isSendingCode ? '전송 중...' : '인증 코드 발송'}
           </button>
         )}
       </form>
@@ -183,6 +194,7 @@ function SignupPage({ onSwitchToLogin }) {
               placeholder="인증 코드 입력"
               required
             />
+             {codeError && <p className="error-message">{codeError}</p>}
           </div>
           <button type="submit" className="auth-button" disabled={!verificationCode}>
             인증 코드 확인
