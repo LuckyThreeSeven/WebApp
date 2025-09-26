@@ -46,17 +46,24 @@ function LoginPage({ onLoginSuccess, onSwitchToSignup }) {
   // 1. 이메일/비밀번호 제출 핸들러
   const handleCredentialsSubmit = async (e) => {
     e.preventDefault();
+
+    // 사용자 경험을 위해 UI를 먼저 인증 코드 입력 단계로 전환합니다.
+    setUiMode('enterCode');
+
     try {
+      // API 호출은 백그라운드에서 실행합니다.
       const response = await submitCredentials(loginEmail, loginPassword);
-      if (response.ok) {
-        const data = await response.json();
-        alert(data.message || '인증 코드가 발송되었습니다. 이메일을 확인해주세요.');
-        setUiMode('enterCode'); // 인증 코드 입력 UI로 전환
-      } else {
-        alert('이메일 또는 비밀번호가 올바르지 않습니다.');
+      
+      // 만약 API 호출이 실패하면, 사용자에게 알리고 이전 단계로 되돌립니다.
+      if (!response.ok) {
+        alert('이메일 또는 비밀번호가 올바르지 않습니다. 다시 입력해주세요.');
+        setUiMode('enterCredentials'); // 실패 시 UI 되돌리기
       }
+      // 성공 시에는 별도 알림 없이 사용자가 다음 단계를 진행하도록 둡니다.
+
     } catch (error) {
       alert(`로그인 중 오류 발생: ${error}`);
+      setUiMode('enterCredentials'); // 에러 발생 시 UI 되돌리기
     }
   };
 
