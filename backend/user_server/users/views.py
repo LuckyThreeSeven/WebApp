@@ -44,6 +44,12 @@ def verify_email(request):
 
     email = serializer.validated_data["email"]
 
+    if User.objects.filter(email=email).exists():
+        return Response(
+            {"error": "이미 가입된 이메일입니다."},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
     verification_code = "".join(random.choices(string.digits, k=5))
     code_expiry = timezone.now() + timedelta(minutes=5)
 
@@ -356,4 +362,3 @@ def login_verify(request):
         },
         status=status.HTTP_200_OK,
     )
-
