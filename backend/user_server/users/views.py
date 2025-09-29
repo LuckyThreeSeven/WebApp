@@ -15,7 +15,7 @@ import requests
 from django.utils import timezone
 from datetime import timedelta
 from django.contrib.auth import authenticate
-from jwt_token.manager import jwtManager
+from .jwt_token.manager import jwtManager
 
 
 @api_view(["GET"])
