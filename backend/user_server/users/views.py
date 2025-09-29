@@ -4,10 +4,8 @@ from rest_framework import status
 from .models import User
 from .serializers import (
     EmailSerializer,
-    UserSerializer,
     UserCreateSerializer,
     VerifyEmailSerializer,
-    PasswordChangeSerializer,
 )
 from drf_spectacular.utils import extend_schema
 import random
@@ -17,8 +15,7 @@ import requests
 from django.utils import timezone
 from datetime import timedelta
 from django.contrib.auth import authenticate
-from rest_framework_simplejwt.tokens import RefreshToken
-
+from jwt_token.manager import jwtManager
 
 @api_view(["GET"])
 def health(request):
@@ -351,14 +348,12 @@ def login_verify(request):
         pass
 
     # Generate JWT
-    refresh = RefreshToken.for_user(user)
-    refresh["uid"] = str(user.uid)
+    token = jwtManager.create_token({"uid": str(user.email)})
 
     return Response(
         {
             "message": "로그인이 완료되었습니다.",
-            "refresh": str(refresh),
-            "access": str(refresh.access_token),
+            "token": str(token),
         },
         status=status.HTTP_200_OK,
     )

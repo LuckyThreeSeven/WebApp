@@ -7,3 +7,4 @@ django-cors-headers
 requests
 python-dotenv
 pyjwt[crypto]
+cryptography
