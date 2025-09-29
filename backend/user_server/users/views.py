@@ -348,7 +348,7 @@ def login_verify(request):
         pass
 
     # Generate JWT
-    token = jwtManager.create_token({"uid": str(user.email)})
+    token = jwtManager.create_token(user.email)
 
     return Response(
         {
