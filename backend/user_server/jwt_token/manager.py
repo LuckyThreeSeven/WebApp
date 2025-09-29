@@ -37,13 +37,13 @@ TOKEN_LIFETIME_DAY = os.environ.get("TOKEN_LIFETIME_DAY", 3)
 KEY_ID = 'simple'
 
 class JwtTokenManager:
-    def __init__(self, private_key: str, public_key: str, algorithm: str, key_id: str, issuer: str, lifetime_minutes):
+    def __init__(self, private_key: str, public_key: str, algorithm: str, key_id: str, issuer: str, lifetime_day: int):
         self.private_key = private_key
         self.public_key = public_key
         self.algorithm = algorithm
         self.key_id = key_id
         self.issuer = issuer
-        self.lifetime = timedelta(minutes=lifetime_minutes)
+        self.lifetime = timedelta(days=lifetime_day)
 
     def get_validation_key(self):
         return {
