@@ -1,35 +1,40 @@
 import React from 'react';
 
-function BlackboxListPage({ blackboxes, selectedBlackboxId, onBlackboxClick, onAddClick }) {
+// Health status에 따라 클래스를 반환하는 헬퍼 함수
+const getStatusClass = (status) => {
+  if (status === 'HEALTHY') return 'status-healthy';
+  if (status === 'UNHEALTHY') return 'status-unhealthy';
+  return 'status-unknown';
+};
+
+
+function BlackboxListPage({ blackboxes, selectedBlackboxId, onBlackboxClick, onAddClick, isLoading }) {
   return (
-    <div className="blackbox-list-container">
-      <div className="section-header">
-        <h2>내 블랙박스 목록</h2>
-        <button onClick={onAddClick} className="add-button">+ 새 블랙박스 등록</button>
-      </div>
-      {blackboxes.length > 0 ? (
-        <ul className="blackbox-list">
+    <div className="sidebar-list-container">
+      <button onClick={onAddClick} className="add-button-sidebar">+ 새 블랙박스 추가</button>
+      
+      {isLoading && <p className="sidebar-loading">목록 로딩 중...</p>}
+
+      {!isLoading && (
+        <nav className="blackbox-nav-list">
           {blackboxes.map((box) => (
-            <li 
+            <a 
               key={box.uuid} 
-              onClick={() => onBlackboxClick(box.uuid)} 
-              className={`blackbox-item ${selectedBlackboxId === box.uuid ? 'selected' : ''}`}
+              href="#"
+              onClick={(e) => { e.preventDefault(); onBlackboxClick(box.uuid); }} 
+              className={`nav-item ${selectedBlackboxId === box.uuid ? 'selected' : ''}`}
             >
-              <strong>{box.nickname}</strong>
-              <span className="item-uuid">({box.uuid})</span>
-              <ul className="item-details">
-                <li>상태: {box.health_status}</li>
-                <li>등록일: {new Date(box.created_at).toLocaleString()}</li>
-                <li>마지막 접속: {box.last_connected_at ? new Date(box.last_connected_at).toLocaleString() : 'N/A'}</li>
-              </ul>
-            </li>
+              <span className="nav-item-nickname">{box.nickname}</span>
+              <span className={`status-badge ${getStatusClass(box.health_status)}`}>
+                {box.health_status || 'UNKNOWN'}
+              </span>
+            </a>
           ))}
-        </ul>
-      ) : (
-        <div className="empty-list">
-          <p>등록된 블랙박스가 없습니다.</p>
-          <p>오른쪽 상단의 버튼을 눌러 새 블랙박스를 등록해주세요.</p>
-        </div>
+        </nav>
+      )}
+
+      {!isLoading && blackboxes.length === 0 && (
+        <p className="empty-sidebar-list">등록된 블랙박스가 없습니다.</p>
       )}
     </div>
   );
