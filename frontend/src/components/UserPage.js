@@ -14,7 +14,7 @@ function UserPage({ onLogout }) {
   const fetchBlackboxes = useCallback(async () => {
     setIsLoading(true);
     setError(null);
-    const token = localStorage.getItem('access_token');
+    const token = localStorage.getItem('token');
     try {
         const response = await fetch(`${TEST_API_URL}/api/status/blackboxes`, {
             headers: { 'Authorization': `Bearer ${token}` },

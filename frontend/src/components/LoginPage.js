@@ -76,11 +76,8 @@ function LoginPage({ onLoginSuccess, onSwitchToSignup }) {
       if (response.ok) {
         const data = await response.json();
 
-        if (data.access && data.refresh) {
-          // access_token을 localStorage에 저장
-          localStorage.setItem('access_token', data.access);
-          // refresh_token을 localStorage에 저장
-          localStorage.setItem('refresh_token', data.refresh);
+        if (data.token) {
+          localStorage.setItem('token', data.token);
 
           onLoginSuccess();
         } else {
