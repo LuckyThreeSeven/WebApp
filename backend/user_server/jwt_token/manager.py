@@ -2,6 +2,7 @@ import jwt
 import os
 import base64
 import datetime
+import logging
 from datetime import timedelta
 from zoneinfo import ZoneInfo
 
@@ -27,6 +28,8 @@ def generate_rsa_keys():
         )
         return private_key, public_key
     else:
+        logging.warning("!! RSA keys not found in environment variables. Generating new keys. " +
+        "if you are in production, please set PRIVATE_KEY and PUBLIC_KEY environment variables !!")
         private_key = rsa.generate_private_key(
             public_exponent=65537,
             key_size=2048,
@@ -36,6 +39,7 @@ def generate_rsa_keys():
     return private_key, public_key
 
 def convert_keys_to_pem(private_key: rsa.RSAPrivateKey, public_key: rsa.RSAPublicKey):
+
     private_pem = private_key.private_bytes(
         encoding=serialization.Encoding.PEM,
         format=serialization.PrivateFormat.PKCS8,
