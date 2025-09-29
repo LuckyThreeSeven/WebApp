@@ -45,6 +45,11 @@ class JwtTokenManager:
         self.issuer = issuer
         self.lifetime = timedelta(minutes=lifetime_minutes)
 
+    def get_validation_key(self):
+        return {
+            'keys': [ self.public_key ]
+        }
+
     def create_token(self, payload_data: dict) -> str:
         now = datetime.datetime.now(ZoneInfo("Asia/Seoul"))
         token_id = os.urandom(16).hex()
