@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-const TEST_API_URL = 'http://localhost:4242';
+const BLACKBOX_API_URL = 'http://ec2-43-202-76-207.ap-northeast-2.compute.amazonaws.com';
 
 function RegisterBlackboxPage({ onRegisterSuccess }) {
   const [uuid, setUuid] = useState('');
@@ -8,8 +8,7 @@ function RegisterBlackboxPage({ onRegisterSuccess }) {
 
   const handleRegisterBlackbox = async (e) => {
     e.preventDefault();
-    // 로컬 스토리지에서 토큰 가져오기
-    const token = localStorage.getItem('access_token');
+    const token = localStorage.getItem('token');
 
     if (!uuid || !nickname) {
       alert('UUID와 닉네임을 모두 입력해주세요.');
@@ -21,11 +20,12 @@ function RegisterBlackboxPage({ onRegisterSuccess }) {
     }
 
     try {
-      const response = await fetch(`${TEST_API_URL}/api/status/blackboxes`, {
+      const response = await fetch(`${BLACKBOX_API_URL}/blackboxes`, {
         method: 'POST',
         headers: {
+          'accept': '*/*',
+          'WWW-Authorization': token,
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
         },
         body: JSON.stringify({
           uuid: uuid,
@@ -40,7 +40,7 @@ function RegisterBlackboxPage({ onRegisterSuccess }) {
         onRegisterSuccess();
       } else {
         const errorData = await response.json();
-        alert(`블랙박스 등록 실패: ${JSON.stringify(errorData)}`);
+        alert(`블랙박스 등록 실패: ${errorData.detail || JSON.stringify(errorData)}`);
       }
     } catch (error) {
       alert(`블랙박스 등록 중 오류 발생: ${error}`);
@@ -48,30 +48,47 @@ function RegisterBlackboxPage({ onRegisterSuccess }) {
   };
 
   return (
-    <div className="register-form-container">
-      <form onSubmit={handleRegisterBlackbox} className="register-form">
-        <div className="input-group">
-          <input
-            className="auth-input"
-            type="text"
-            value={uuid}
-            onChange={(e) => setUuid(e.target.value)}
-            placeholder="블랙박스 UUID"
-            required
-          />
-        </div>
-        <div className="input-group">
-          <input
-            className="auth-input"
-            type="text"
-            value={nickname}
-            onChange={(e) => setNickname(e.target.value)}
-            placeholder="닉네임"
-            required
-          />
-        </div>
-        <button type="submit" className="auth-button">등록하기</button>
-      </form>
+    <div className="register-page-container">
+      <div className="section-header">
+        <h2>새 블랙박스 등록</h2>
+      </div>
+      <div className="form-wrapper">
+        <form onSubmit={handleRegisterBlackbox} className="desktop-form">
+          <div className="form-row">
+            <label htmlFor="uuid-input" className="form-label">블랙박스 UUID</label>
+            <div className="input-group">
+              <input
+                id="uuid-input"
+                className="auth-input"
+                type="text"
+                value={uuid}
+                onChange={(e) => setUuid(e.target.value)}
+                placeholder="기기에서 확인된 UUID를 입력하세요"
+                required
+              />
+            </div>
+          </div>
+
+          <div className="form-row">
+            <label htmlFor="nickname-input" className="form-label">닉네임</label>
+            <div className="input-group">
+              <input
+                id="nickname-input"
+                className="auth-input"
+                type="text"
+                value={nickname}
+                onChange={(e) => setNickname(e.target.value)}
+                placeholder="관리하기 쉬운 닉네임을 지정하세요 (예: 아빠차)"
+                required
+              />
+            </div>
+          </div>
+          
+          <div className="form-actions">
+              <button type="submit" className="auth-button">등록하기</button>
+          </div>
+        </form>
+      </div>
     </div>
   );
 }
