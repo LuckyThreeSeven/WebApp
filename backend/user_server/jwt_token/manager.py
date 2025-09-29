@@ -92,7 +92,7 @@ class JwtTokenManager:
             'iat': now,
             'exp': now + self.lifetime,
             'sub': user_id,
-            'uid': user_id,
+            'user_id': user_id,
             'jti': token_id,
         }
 
