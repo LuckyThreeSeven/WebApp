@@ -15,7 +15,7 @@ import requests
 from django.utils import timezone
 from datetime import timedelta
 from django.contrib.auth import authenticate
-from jwt_token.manager import jwtManager
+from .jwt_token.manager import jwtManager
 
 
 @api_view(["GET"])
@@ -349,7 +349,7 @@ def login_verify(request):
         pass
 
     # Generate JWT
-    token = jwtManager.create_token(user.uid)
+    token = jwtManager.create_token(str(user.uid))
 
     return Response(
         {
