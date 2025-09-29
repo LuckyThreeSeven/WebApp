@@ -47,10 +47,13 @@ class JwtTokenManager:
 
     def create_token(self, payload_data: dict) -> str:
         now = datetime.datetime.now(ZoneInfo("Asia/Seoul"))
+        token_id = os.urandom(16).hex()
         payload = {
             'iss': self.issuer,
             'iat': now,
             'exp': now + self.lifetime,
+            'sub': 'access',
+            'jti': token_id
         }
 
         payload.update(payload_data)
