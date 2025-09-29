@@ -349,7 +349,7 @@ def login_verify(request):
         pass
 
     # Generate JWT
-    token = jwtManager.create_token(user.uid)
+    token = jwtManager.create_token(str(user.uid))
 
     return Response(
         {
