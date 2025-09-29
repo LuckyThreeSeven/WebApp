@@ -17,6 +17,7 @@ from datetime import timedelta
 from django.contrib.auth import authenticate
 from jwt_token.manager import jwtManager
 
+
 @api_view(["GET"])
 def health(request):
     return Response({"status": "ok"})
@@ -348,7 +349,7 @@ def login_verify(request):
         pass
 
     # Generate JWT
-    token = jwtManager.create_token(user.email)
+    token = jwtManager.create_token(user.uid)
 
     return Response(
         {
