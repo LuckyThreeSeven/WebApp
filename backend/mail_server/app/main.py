@@ -57,7 +57,7 @@ async def send_email_status(email: EmailRequest):
     try:
         async with httpx.AsyncClient() as client:
             response = await client.get(
-                f"http://{user_server_url}/api/users/email/?uid={email.to}"
+                f"{user_server_url}/api/users/email/?uid={email.to}"
             )
             response.raise_for_status()
             receiver = response.json()["email"]
