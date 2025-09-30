@@ -25,7 +25,7 @@ class EmailRequestStatus(BaseModel):
     parameters: list
 
 
-user_server_url = os.getenv("USER_SERVER_URL", "localhost:8000")
+user_server_url = os.getenv("USER_SERVER_URL", "http://user-server:8000")
 
 
 @app.get("/api/email")
