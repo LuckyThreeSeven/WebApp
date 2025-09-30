@@ -117,3 +117,7 @@ else:
 CORS_ALLOW_CREDENTIALS = True
 
 SESSION_COOKIE_AGE = 1800
+
+REST_FRAMEWORK = {
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+}
