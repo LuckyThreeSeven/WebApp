@@ -285,9 +285,6 @@ def login_password(request):
 
     # Send email with the 2FA code
     try:
-        mail_server_url = os.getenv(
-            "MAIL_API_URL", "http://mail-server:8000/api/email/users"
-        )
         response = requests.post(
             mail_server_url,
             json={
