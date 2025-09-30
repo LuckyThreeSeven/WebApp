@@ -1,6 +1,8 @@
 from fastapi import FastAPI, HTTPException, status
 from pydantic import BaseModel, EmailStr
 from send_email import send_gmail
+import os
+import httpx
 
 app = FastAPI()
 
@@ -11,10 +13,19 @@ class EmailSchema(BaseModel):
     context: str
 
 
-class EmailRequest(BaseModel):
+class EmailRequestUser(BaseModel):
     to: str
     format: str
     parameters: list
+
+
+class EmailRequestStatus(BaseModel):
+    to: str
+    format: str
+    parameters: list
+
+
+user_server_url = os.getenv("USER_SERVER_URL", "localhost:8000")
 
 
 @app.get("/api/email")
@@ -22,8 +33,8 @@ def health():
     return {"status": "ok"}
 
 
-@app.post("/api/email")
-async def send_email(email: EmailRequest):
+@app.post("/api/email/users")
+async def send_email_users(email: EmailRequestUser):
     try:
         email_to_send = EmailSchema(
             to=email.to,
@@ -39,6 +50,43 @@ async def send_email(email: EmailRequest):
     except ValueError as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e)
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to send email: {e}",
+        )
+
+
+@app.post("/api/email/status")
+async def send_email_status(email: EmailRequestStatus):
+    try:
+        async with httpx.AsyncClient() as client:
+            response = await client.get(
+                f"http://{user_server_url}/api/users/email/?uid={email.to}"
+            )
+            response.raise_for_status()
+            receiver = response.json()["email"]
+
+        email_to_send = EmailSchema(
+            to=receiver,
+            subject=f"[{email.format}] {email.to}",
+            context=str(email.parameters),
+        )
+        send_gmail(
+            to=email_to_send.to,
+            subject=email_to_send.subject,
+            context=email_to_send.context,
+        )
+        return {"message": "Email sent successfully"}
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e)
+        )
+    except httpx.HTTPStatusError as e:
+        raise HTTPException(
+            status_code=e.response.status_code,
+            detail=f"Failed to get user email: {e.response.text}",
         )
     except Exception as e:
         raise HTTPException(
