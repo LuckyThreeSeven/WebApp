@@ -13,13 +13,7 @@ class EmailSchema(BaseModel):
     context: str
 
 
-class EmailRequestUser(BaseModel):
-    to: str
-    format: str
-    parameters: list
-
-
-class EmailRequestStatus(BaseModel):
+class EmailRequest(BaseModel):
     to: str
     format: str
     parameters: list
@@ -34,7 +28,7 @@ def health():
 
 
 @app.post("/api/email/users")
-async def send_email_users(email: EmailRequestUser):
+async def send_email_users(email: EmailRequest):
     try:
         email_to_send = EmailSchema(
             to=email.to,
@@ -59,7 +53,7 @@ async def send_email_users(email: EmailRequestUser):
 
 
 @app.post("/api/email/status")
-async def send_email_status(email: EmailRequestStatus):
+async def send_email_status(email: EmailRequest):
     try:
         async with httpx.AsyncClient() as client:
             response = await client.get(
