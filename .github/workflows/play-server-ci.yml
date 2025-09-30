@@ -1,0 +1,42 @@
+name: Play Server CI
+
+on:
+  pull_request:
+    branches: [ "dev", "main" ]
+    paths:
+      - 'backend/play_server/**'
+
+jobs:
+  test-play-server:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build Docker image for play_server
+        run: |
+          docker build -t play-server-image -f backend/play_server/Dockerfile backend/play_server
+
+      - name: Run play_server container
+        env:
+          CLOUDFRONT_DOMAIN: ${{ secrets.CLOUDFRONT_DOMAIN }}
+          CORS_ALLOWED_ORIGINS: ${{ secrets.CORS_ALLOWED_ORIGINS }}
+          KEY_PAIR_ID: ${{ secrets.KEY_PAIR_ID }}
+          S3_PRIVATE_KEY: ${{ secrets.S3_PRIVATE_KEY }}
+        run: |
+          docker run -d --name play-server-container \
+            -p 8000:8000 \
+            -e CLOUDFRONT_DOMAIN \
+            -e CORS_ALLOWED_ORIGINS \
+            -e KEY_PAIR_ID \
+            -e S3_PRIVATE_KEY \
+            play-server-image
+
+      - name: Make test script executable
+        run: chmod +x ./tests/play_server_test.sh
+
+      - name: Run play_server test
+        run: ./tests/play_server_test.sh
+
+      - name: Display Docker logs
+        if: always()
+        run: docker logs play-server-container
