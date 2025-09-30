@@ -24,6 +24,40 @@ def health(request):
 
 
 @extend_schema(
+    parameters=[
+        {
+            "name": "uid",
+            "required": True,
+            "type": "string",
+            "description": "The UID of the user.",
+        }
+    ],
+    responses={
+        200: {"description": "User's email."},
+        400: {"description": "Bad Request (e.g., missing uid)."},
+        404: {"description": "User not found."},
+    },
+)
+@api_view(["GET"])
+def get_email(request):
+    uid = request.query_params.get("uid", None)
+    if not uid:
+        return Response(
+            {"error": "uid parameter is missing"}, status=status.HTTP_400_BAD_REQUEST
+        )
+
+    try:
+        user = User.objects.get(uid=uid)
+        return Response({"email": user.email}, status=status.HTTP_200_OK)
+    except User.DoesNotExist:
+        return Response({"error": "User not found"}, status=status.HTTP_404_NOT_FOUND)
+    except ValueError:
+        return Response(
+            {"error": "Invalid UID format"}, status=status.HTTP_400_BAD_REQUEST
+        )
+
+
+@extend_schema(
     request=EmailSerializer,
     responses={
         200: {"description": "Verification code sent successfully"},

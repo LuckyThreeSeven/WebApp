@@ -4,6 +4,7 @@ from .jwt_token import jwks_view
 
 urlpatterns = [
     path("", views.health, name="health_check"),
+    path("email/", views.get_email, name="get_email"),
     path("signup/verify-email/", views.verify_email, name="verify_email"),
     path("signup/confirm-email/", views.confirm_email, name="confirm_email"),
     path("signup/", views.signup, name="signup"),
