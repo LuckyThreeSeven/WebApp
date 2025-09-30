@@ -10,7 +10,7 @@ const API_URL = 'http://localhost:8000';
  * @returns {Promise<Response>}
  */
 const submitCredentials = async (email, password) => {
-  const response = await fetch(`${API_URL}/api/signin/password/`, {
+  const response = await fetch(`${API_URL}/api/users/signin/password/`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ email, password }),
@@ -26,7 +26,7 @@ const submitCredentials = async (email, password) => {
  * @returns {Promise<Response>}
  */
 const submitVerificationCode = async (email, code) => {
-  const response = await fetch(`${API_URL}/api/signin/`, {
+    const response = await fetch(`${API_URL}/api/users/signin/`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ email, code }),
