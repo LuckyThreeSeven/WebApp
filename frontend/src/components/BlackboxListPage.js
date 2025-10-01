@@ -1,5 +1,3 @@
-import React from 'react';
-
 // Health status에 따라 클래스를 반환하는 헬퍼 함수
 const getStatusClass = (status) => {
   if (status === 'HEALTHY') return 'status-healthy';
@@ -18,17 +16,16 @@ function BlackboxListPage({ blackboxes, selectedBlackboxId, onBlackboxClick, onA
       {!isLoading && (
         <nav className="blackbox-nav-list">
           {blackboxes.map((box) => (
-            <a 
+            <button 
               key={box.uuid} 
-              href="#"
-              onClick={(e) => { e.preventDefault(); onBlackboxClick(box.uuid); }} 
+              onClick={() => onBlackboxClick(box.uuid)} 
               className={`nav-item ${selectedBlackboxId === box.uuid ? 'selected' : ''}`}
             >
               <span className="nav-item-nickname">{box.nickname}</span>
               <span className={`status-badge ${getStatusClass(box.health_status)}`}>
                 {box.health_status || 'UNKNOWN'}
               </span>
-            </a>
+            </button>
           ))}
         </nav>
       )}
