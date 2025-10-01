@@ -4,10 +4,8 @@ from rest_framework import status
 from .models import User
 from .serializers import (
     EmailSerializer,
-    UserSerializer,
     UserCreateSerializer,
     VerifyEmailSerializer,
-    PasswordChangeSerializer,
 )
 from drf_spectacular.utils import extend_schema
 import random
@@ -17,12 +15,49 @@ import requests
 from django.utils import timezone
 from datetime import timedelta
 from django.contrib.auth import authenticate
-from rest_framework_simplejwt.tokens import RefreshToken
+from .jwt_token.manager import jwtManager
 
 
 @api_view(["GET"])
 def health(request):
     return Response({"status": "ok"})
+
+
+@extend_schema(
+    parameters=[
+        {
+            "name": "uid",
+            "required": True,
+            "type": "string",
+            "description": "The UID of the user.",
+        }
+    ],
+    responses={
+        200: {"description": "User's email."},
+        400: {"description": "Bad Request (e.g., missing uid)."},
+        404: {"description": "User not found."},
+    },
+)
+@api_view(["GET"])
+def get_email(request):
+    uid = request.query_params.get("uid", None)
+    if not uid:
+        return Response(
+            {"error": "uid parameter is missing"}, status=status.HTTP_400_BAD_REQUEST
+        )
+
+    try:
+        user = User.objects.get(uid=uid)
+        return Response({"email": user.email}, status=status.HTTP_200_OK)
+    except User.DoesNotExist:
+        return Response({"error": "User not found"}, status=status.HTTP_404_NOT_FOUND)
+    except ValueError:
+        return Response(
+            {"error": "Invalid UID format"}, status=status.HTTP_400_BAD_REQUEST
+        )
+
+
+mail_server_url = os.getenv("MAIL_API_URL", "http://mail-server:8000/api/email/users")
 
 
 @extend_schema(
@@ -59,7 +94,6 @@ def verify_email(request):
     request.session["is_authenticated"] = False
 
     try:
-        mail_server_url = os.getenv("MAIL_API_URL", "http://mail-server:8000/api/email")
         response = requests.post(
             mail_server_url,
             json={
@@ -251,7 +285,6 @@ def login_password(request):
 
     # Send email with the 2FA code
     try:
-        mail_server_url = os.getenv("MAIL_API_URL", "http://mail-server:8000/api/email")
         response = requests.post(
             mail_server_url,
             json={
@@ -351,14 +384,12 @@ def login_verify(request):
         pass
 
     # Generate JWT
-    refresh = RefreshToken.for_user(user)
-    refresh["uid"] = str(user.uid)
+    token = jwtManager.create_token(str(user.uid))
 
     return Response(
         {
             "message": "로그인이 완료되었습니다.",
-            "refresh": str(refresh),
-            "access": str(refresh.access_token),
+            "token": str(token),
         },
         status=status.HTTP_200_OK,
     )
