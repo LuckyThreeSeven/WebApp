@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 
-const BLACKBOX_API_URL = 'http://ec2-43-202-76-207.ap-northeast-2.compute.amazonaws.com';
-const VIDEO_URL_API = 'http://ec2-3-36-44-212.ap-northeast-2.compute.amazonaws.com:8002';
+const STATUS_SERVER_URL = process.env.REACT_APP_STATUS_SERVER_URL || 'http://ec2-43-202-76-207.ap-northeast-2.compute.amazonaws.com';
+const PLAY_SERVER_URL = process.env.REACT_APP_PLAY_SERVER_URL || 'http://ec2-3-36-44-212.ap-northeast-2.compute.amazonaws.com:8002';
+
 
 // 오늘 날짜를 'YYYY-MM-DD' 형식의 문자열로 반환하는 헬퍼 함수
 const getTodayDateString = () => {
@@ -17,7 +18,7 @@ const fetchVideoMetadata = async (blackboxId, date) => {
   if (!token) throw new Error('인증 토큰이 없습니다.');
   
   const formattedDate = `${date}T00:00:00`;
-  const url = `${BLACKBOX_API_URL}/metadata?blackboxId=${blackboxId}&date=${formattedDate}`;
+  const url = `${STATUS_SERVER_URL}/metadata?blackboxId=${blackboxId}&date=${formattedDate}`;
 
   const response = await fetch(url, {
     method: 'GET',
@@ -33,7 +34,7 @@ const fetchSignedVideoUrl = async (objectKey) => {
   const token = localStorage.getItem('token');
   if (!token) throw new Error('인증 토큰이 없습니다.');
 
-  const response = await fetch(`${VIDEO_URL_API}/api/videos/url`, {
+  const response = await fetch(`${PLAY_SERVER_URL}/api/videos/url`, {
     method: 'POST',
     headers: {
       'accept': 'application/json',
