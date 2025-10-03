@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { JWT_TOKEN_KEY, JWT_TOKEN_HEADER } from '../constants';
 import BlackboxListPage from './BlackboxListPage';
 import RegisterBlackboxPage from './RegisterBlackboxPage';
 import VideoMetadataPage from './VideoMetadataPage'; // 새 컴포넌트 임포트
@@ -15,7 +16,7 @@ function UserPage({ onLogout }) {
   const fetchBlackboxes = useCallback(async () => {
     setIsLoading(true);
     setError(null);
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem(JWT_TOKEN_KEY);
     if (!token) {
         setError("로그인 정보가 없습니다. 다시 로그인해주세요.");
         setIsLoading(false);
@@ -27,7 +28,7 @@ function UserPage({ onLogout }) {
             method: 'GET',
             headers: {
                 'accept': '*/*',
-                'WWW-Authorization': token,
+                [JWT_TOKEN_HEADER]: token,
             },
             mode: 'cors', 
         });

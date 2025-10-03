@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { JWT_TOKEN_KEY } from '../constants';
 
 // USER_SERVER_URL
 const USER_SERVER_URL = process.env.REACT_APP_USER_SERVER_URL || 'http://localhost:8000/api/users';
@@ -77,7 +78,7 @@ function LoginPage({ onLoginSuccess, onSwitchToSignup }) {
         const data = await response.json();
 
         if (data.token) {
-          localStorage.setItem('token', data.token);
+          localStorage.setItem(JWT_TOKEN_KEY, data.token);
 
           onLoginSuccess();
         } else {
