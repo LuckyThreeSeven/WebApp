@@ -25,7 +25,7 @@ from drf_spectacular.views import (
 )
 
 urlpatterns = [
-    path('', include('django_prometheus.urls')), # for prometheus
+    path("", include("django_prometheus.urls")),  # for prometheus
     path("api/users/", include("users.urls")),
     path("api/users/schema/", SpectacularAPIView.as_view(), name="schema"),
     path(
