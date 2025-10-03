@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { JWT_TOKEN_KEY, JWT_TOKEN_HEADER } from '../constants';
 import BlackboxListPage from './BlackboxListPage';
 import RegisterBlackboxPage from './RegisterBlackboxPage';
 import VideoMetadataPage from './VideoMetadataPage'; // 새 컴포넌트 임포트
 
-const BLACKBOX_API_URL = 'http://ec2-43-202-76-207.ap-northeast-2.compute.amazonaws.com';
+const STATUS_SERVER_URL = process.env.REACT_APP_STATUS_SERVER_URL || 'http://ec2-43-202-76-207.ap-northeast-2.compute.amazonaws.com';
 
 function UserPage({ onLogout }) {
   const [blackboxes, setBlackboxes] = useState([]);
@@ -15,7 +16,7 @@ function UserPage({ onLogout }) {
   const fetchBlackboxes = useCallback(async () => {
     setIsLoading(true);
     setError(null);
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem(JWT_TOKEN_KEY);
     if (!token) {
         setError("로그인 정보가 없습니다. 다시 로그인해주세요.");
         setIsLoading(false);
@@ -23,11 +24,11 @@ function UserPage({ onLogout }) {
     }
 
     try {
-        const response = await fetch(`${BLACKBOX_API_URL}/blackboxes`, {
+        const response = await fetch(`${STATUS_SERVER_URL}/blackboxes`, {
             method: 'GET',
             headers: {
                 'accept': '*/*',
-                'WWW-Authorization': token,
+                [JWT_TOKEN_HEADER]: token,
             },
             mode: 'cors', 
         });

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
+import { JWT_TOKEN_KEY, JWT_TOKEN_HEADER } from '../constants';
 
-const BLACKBOX_API_URL = 'http://ec2-43-202-76-207.ap-northeast-2.compute.amazonaws.com';
+const STATUS_SERVER_URL = process.env.REACT_APP_STATUS_SERVER_URL || 'http://ec2-43-202-76-207.ap-northeast-2.compute.amazonaws.com';
 
 function RegisterBlackboxPage({ onRegisterSuccess }) {
   const [uuid, setUuid] = useState('');
@@ -8,7 +9,7 @@ function RegisterBlackboxPage({ onRegisterSuccess }) {
 
   const handleRegisterBlackbox = async (e) => {
     e.preventDefault();
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem(JWT_TOKEN_KEY);
 
     if (!uuid || !nickname) {
       alert('UUID와 닉네임을 모두 입력해주세요.');
@@ -20,11 +21,11 @@ function RegisterBlackboxPage({ onRegisterSuccess }) {
     }
 
     try {
-      const response = await fetch(`${BLACKBOX_API_URL}/blackboxes`, {
+      const response = await fetch(`${STATUS_SERVER_URL}/blackboxes`, {
         method: 'POST',
         headers: {
           'accept': '*/*',
-          'WWW-Authorization': token,
+          [JWT_TOKEN_HEADER]: token,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({

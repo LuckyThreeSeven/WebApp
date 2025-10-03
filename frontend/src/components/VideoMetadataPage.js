@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import { JWT_TOKEN_KEY, JWT_TOKEN_HEADER } from '../constants';
 
-const BLACKBOX_API_URL = 'http://ec2-43-202-76-207.ap-northeast-2.compute.amazonaws.com';
-const VIDEO_URL_API = 'http://ec2-3-36-44-212.ap-northeast-2.compute.amazonaws.com:8002';
+const STATUS_SERVER_URL = process.env.REACT_APP_STATUS_SERVER_URL || 'http://ec2-43-202-76-207.ap-northeast-2.compute.amazonaws.com';
+const PLAY_SERVER_URL = process.env.REACT_APP_PLAY_SERVER_URL || 'http://ec2-3-36-44-212.ap-northeast-2.compute.amazonaws.com:8002';
+
 
 // 오늘 날짜를 'YYYY-MM-DD' 형식의 문자열로 반환하는 헬퍼 함수
 const getTodayDateString = () => {
@@ -13,15 +15,15 @@ const getTodayDateString = () => {
 
 // 메타데이터를 가져오는 API 호출 함수
 const fetchVideoMetadata = async (blackboxId, date) => {
-  const token = localStorage.getItem('token');
+  const token = localStorage.getItem(JWT_TOKEN_KEY);
   if (!token) throw new Error('인증 토큰이 없습니다.');
   
   const formattedDate = `${date}T00:00:00`;
-  const url = `${BLACKBOX_API_URL}/metadata?blackboxId=${blackboxId}&date=${formattedDate}`;
+  const url = `${STATUS_SERVER_URL}/metadata?blackboxId=${blackboxId}&date=${formattedDate}`;
 
   const response = await fetch(url, {
     method: 'GET',
-    headers: { 'accept': '*/*', 'WWW-Authorization': token },
+    headers: { 'accept': '*/*', [JWT_TOKEN_HEADER]: token },
     mode: 'cors',
   });
   if (!response.ok) throw new Error(`메타데이터 로딩 실패 (에러: ${response.status})`);
@@ -30,15 +32,15 @@ const fetchVideoMetadata = async (blackboxId, date) => {
 
 // Signed URL을 가져오는 API 호출 함수
 const fetchSignedVideoUrl = async (objectKey) => {
-  const token = localStorage.getItem('token');
+  const token = localStorage.getItem(JWT_TOKEN_KEY);
   if (!token) throw new Error('인증 토큰이 없습니다.');
 
-  const response = await fetch(`${VIDEO_URL_API}/api/videos/url`, {
+  const response = await fetch(`${PLAY_SERVER_URL}/api/videos/url`, {
     method: 'POST',
     headers: {
       'accept': 'application/json',
       'Content-Type': 'application/json',
-      'WWW-Authorization': token, // 헤더에 토큰 추가
+      [JWT_TOKEN_HEADER]: token, // 헤더에 토큰 추가
     },
     body: JSON.stringify({ object_key: objectKey }),
   });

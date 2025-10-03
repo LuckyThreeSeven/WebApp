@@ -20,6 +20,10 @@ jobs:
           npm install
           npm run build
         working-directory: frontend
+        env:
+          REACT_APP_USER_SERVER_URL: ${{ secrets.USER_SERVER_URL }}
+          REACT_APP_STATUS_SERVER_URL: ${{ secrets.STATUS_SERVER_URL }}
+          REACT_APP_PLAY_SERVER_URL: ${{ secrets.PLAY_SERVER_URL }}
 
       - name: AWS IAM user define
         uses: aws-actions/configure-aws-credentials@v4

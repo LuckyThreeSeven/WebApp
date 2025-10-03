@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
+import { JWT_TOKEN_KEY } from '../constants';
 
-// API 기본 URL
-const API_URL = 'http://localhost:8000';
+// USER_SERVER_URL
+const USER_SERVER_URL = process.env.REACT_APP_USER_SERVER_URL || 'http://localhost:8000/api/users';
 
 /**
  * [1단계] 이메일과 비밀번호를 전송하여 2단계 인증 코드를 요청합니다.
@@ -10,7 +11,7 @@ const API_URL = 'http://localhost:8000';
  * @returns {Promise<Response>}
  */
 const submitCredentials = async (email, password) => {
-  const response = await fetch(`${API_URL}/api/users/signin/password/`, {
+  const response = await fetch(`${USER_SERVER_URL}/signin/password/`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ email, password }),
@@ -26,7 +27,7 @@ const submitCredentials = async (email, password) => {
  * @returns {Promise<Response>}
  */
 const submitVerificationCode = async (email, code) => {
-    const response = await fetch(`${API_URL}/api/users/signin/`, {
+    const response = await fetch(`${USER_SERVER_URL}/signin/`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ email, code }),
@@ -77,7 +78,7 @@ function LoginPage({ onLoginSuccess, onSwitchToSignup }) {
         const data = await response.json();
 
         if (data.token) {
-          localStorage.setItem('token', data.token);
+          localStorage.setItem(JWT_TOKEN_KEY, data.token);
 
           onLoginSuccess();
         } else {
