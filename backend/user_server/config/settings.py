@@ -28,9 +28,11 @@ INSTALLED_APPS = [
     "drf_spectacular",  # Add drf-spectacular
     "corsheaders",
     "users.apps.UsersConfig",
+    "django_prometheus",  # Add prometheues
 ]
 AUTH_USER_MODEL = "users.User"
 MIDDLEWARE = [
+    "django_prometheus.middleware.PrometheusBeforeMiddleware",  # for prometheus
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
@@ -39,6 +41,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "django_prometheus.middleware.PrometheusAfterMiddleware",  # for prometheus
 ]
 ROOT_URLCONF = "config.urls"
 TEMPLATES = [

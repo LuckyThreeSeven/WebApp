@@ -6,7 +6,7 @@ from botocore.signers import CloudFrontSigner
 from cryptography.hazmat.primitives import serialization, hashes
 from cryptography.hazmat.primitives.asymmetric import padding
 from typing import List, Tuple
-
+from prometheus_fastapi_instrumentator import Instrumentator
 from config import settings
 
 private_key = serialization.load_pem_private_key(
@@ -26,6 +26,8 @@ def rsa_signer(message: bytes) -> bytes:
 signer = CloudFrontSigner(settings.KEY_PAIR_ID, rsa_signer)
 
 app = FastAPI()
+
+Instrumentator().instrument(app).expose(app)  # Add prometheus
 
 app.add_middleware(
     CORSMiddleware,

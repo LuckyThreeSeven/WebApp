@@ -3,8 +3,11 @@ from pydantic import BaseModel, EmailStr
 from send_email import send_gmail
 import os
 import httpx
+from prometheus_fastapi_instrumentator import Instrumentator
 
 app = FastAPI()
+
+Instrumentator().instrument(app).expose(app)  # Add prometheus
 
 
 class EmailSchema(BaseModel):
