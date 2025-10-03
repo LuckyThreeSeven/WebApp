@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 
 // API 기본 URL
-const API_URL = 'http://localhost:8000';
+const USER_SERVER_URL = process.env.REACT_APP_USER_SERVER_URL || 'http://localhost:8000/api/users';
 
 // --- API 호출 함수들 ---
 
@@ -11,7 +11,7 @@ const API_URL = 'http://localhost:8000';
  * @returns {Promise<Response>} - fetch API의 Response 객체
  */
 const requestVerificationCode = async (email) => {
-  const response = await fetch(`${API_URL}/api/users/signup/verify-email/`, {
+  const response = await fetch(`${USER_SERVER_URL}/signup/verify-email/`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ email }),
@@ -27,7 +27,7 @@ const requestVerificationCode = async (email) => {
  * @returns {Promise<Response>} - fetch API의 Response 객체
  */
 const submitVerificationCode = async (email, code) => {
-  const response = await fetch(`${API_URL}/api/users/signup/confirm-email/`, {
+  const response = await fetch(`${USER_SERVER_URL}/signup/confirm-email/`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ email, code }),
@@ -43,7 +43,7 @@ const submitVerificationCode = async (email, code) => {
  * @returns {Promise<Response>} - fetch API의 Response 객체
  */
 const completeSignUp = async (email, password) => {
-    const response = await fetch(`${API_URL}/api/users/signup/`, {
+    const response = await fetch(`${USER_SERVER_URL}/signup/`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ email, password }),
