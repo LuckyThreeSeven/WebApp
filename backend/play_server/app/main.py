@@ -27,7 +27,7 @@ signer = CloudFrontSigner(settings.KEY_PAIR_ID, rsa_signer)
 
 app = FastAPI()
 
-Instrumentator().instrument(app).expose(app)  # Add prometheues
+Instrumentator().instrument(app).expose(app)  # Add prometheus
 
 app.add_middleware(
     CORSMiddleware,
