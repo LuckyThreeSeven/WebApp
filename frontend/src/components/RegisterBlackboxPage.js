@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-const BLACKBOX_API_URL = 'http://ec2-43-202-76-207.ap-northeast-2.compute.amazonaws.com';
+const STATUS_SERVER_URL = process.env.REACT_APP_STATUS_SERVER_URL || 'http://ec2-43-202-76-207.ap-northeast-2.compute.amazonaws.com';
 
 function RegisterBlackboxPage({ onRegisterSuccess }) {
   const [uuid, setUuid] = useState('');
@@ -20,7 +20,7 @@ function RegisterBlackboxPage({ onRegisterSuccess }) {
     }
 
     try {
-      const response = await fetch(`${BLACKBOX_API_URL}/blackboxes`, {
+      const response = await fetch(`${STATUS_SERVER_URL}/blackboxes`, {
         method: 'POST',
         headers: {
           'accept': '*/*',
