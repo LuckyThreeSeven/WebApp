@@ -82,12 +82,12 @@ class SignedURLListResponse(BaseModel):
     signed_urls: List[SignedURLResponse]
 
 
-@app.get("/api/videos")
+@app.get("/videos")
 def health():
     return {"status": "ok"}
 
 
-@app.post("/api/videos/url", response_model=SignedURLResponse)
+@app.post("/videos/url", response_model=SignedURLResponse)
 def get_signed_url(request: ObjectKeyRequest):
     """!
     @brief
@@ -100,7 +100,7 @@ def get_signed_url(request: ObjectKeyRequest):
     return {"signed_url": signed_url, "expire_time": expire_time}
 
 
-@app.post("/api/videos/urls", response_model=SignedURLListResponse)
+@app.post("/videos/urls", response_model=SignedURLListResponse)
 def get_signed_urls(request: ObjectKeysRequest):
     """!
     @brief
