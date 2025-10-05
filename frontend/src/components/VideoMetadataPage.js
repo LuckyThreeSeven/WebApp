@@ -35,7 +35,7 @@ const fetchSignedVideoUrl = async (objectKey) => {
   const token = localStorage.getItem(JWT_TOKEN_KEY);
   if (!token) throw new Error('인증 토큰이 없습니다.');
 
-  const response = await fetch(`${PLAY_SERVER_URL}/api/videos/url`, {
+  const response = await fetch(`${PLAY_SERVER_URL}/videos/url`, {
     method: 'POST',
     headers: {
       'accept': 'application/json',
