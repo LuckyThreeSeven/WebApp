@@ -26,15 +26,15 @@ from drf_spectacular.views import (
 
 urlpatterns = [
     path("", include("django_prometheus.urls")),  # for prometheus
-    path("api/users/", include("users.urls")),
-    path("api/users/schema/", SpectacularAPIView.as_view(), name="schema"),
+    path("users/", include("users.urls")),
+    path("users/schema/", SpectacularAPIView.as_view(), name="schema"),
     path(
-        "api/users/schema/swagger-ui/",
+        "users/schema/swagger-ui/",
         SpectacularSwaggerView.as_view(url_name="schema"),
         name="swagger-ui",
     ),
     path(
-        "api/users/schema/redoc/",
+        "users/schema/redoc/",
         SpectacularRedocView.as_view(url_name="schema"),
         name="redoc",
     ),

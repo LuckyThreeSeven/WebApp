@@ -25,12 +25,12 @@ class EmailRequest(BaseModel):
 user_server_url = os.getenv("USER_SERVER_URL", "http://user-server:8000")
 
 
-@app.get("/api/email")
+@app.get("/email")
 def health():
     return {"status": "ok"}
 
 
-@app.post("/api/email/users")
+@app.post("/email/users")
 async def send_email_users(email: EmailRequest):
     try:
         email_to_send = EmailSchema(
@@ -55,12 +55,12 @@ async def send_email_users(email: EmailRequest):
         )
 
 
-@app.post("/api/email/status")
+@app.post("/email/status")
 async def send_email_status(email: EmailRequest):
     try:
         async with httpx.AsyncClient() as client:
             response = await client.get(
-                f"{user_server_url}/api/users/email/?uid={email.to}"
+                f"{user_server_url}/users/email/?uid={email.to}"
             )
             response.raise_for_status()
             receiver = response.json()["email"]

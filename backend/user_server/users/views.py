@@ -57,7 +57,7 @@ def get_email(request):
         )
 
 
-mail_server_url = os.getenv("MAIL_API_URL", "http://mail-server:8000/api/email/users")
+mail_server_url = os.getenv("MAIL_API_URL", "http://mail-server:8000/email/users")
 
 
 @extend_schema(

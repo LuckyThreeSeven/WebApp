@@ -7,8 +7,8 @@ echo "--- Health Check Begin ---"
 echo "Waiting for server to start..."
 sleep 10 # The user-server with Django might take a bit longer to start
 
-echo "Send Request to http://localhost:8000/api/users/"
-RESPONSE=$(curl -s http://localhost:8000/api/users/)
+echo "Send Request to http://localhost:8000/users/"
+RESPONSE=$(curl -s http://localhost:8000/users/)
 EXPECTED_RESPONSE='{"status":"ok"}'
 
 echo "Received response: $RESPONSE"

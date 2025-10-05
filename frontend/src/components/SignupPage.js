@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 
 // API 기본 URL
-const USER_SERVER_URL = process.env.REACT_APP_USER_SERVER_URL || 'http://localhost:8000/api/users';
+const USER_SERVER_URL = process.env.REACT_APP_USER_SERVER_URL || 'http://localhost:8000/users';
 
 // --- API 호출 함수들 ---
 
