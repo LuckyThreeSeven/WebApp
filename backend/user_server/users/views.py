@@ -152,7 +152,7 @@ def confirm_email(request):
     ):
         return Response(
             {
-                "error": "인증 정보가 유효하지 않습니다. 다시 시도해주세요.",
+                "error": f"인증 정보가 유효하지 않습니다. 다시 시도해주세요. {session_email} {session_code} {session_expiry_str}",
                 "input": f"{session_email} {session_code} {session_expiry_str}",
             },
             status=status.HTTP_400_BAD_REQUEST,
