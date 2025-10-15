@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { JWT_TOKEN_KEY, JWT_TOKEN_HEADER } from '../constants';
-
-const STATUS_SERVER_URL = process.env.REACT_APP_STATUS_SERVER_URL || 'http://ec2-43-202-76-207.ap-northeast-2.compute.amazonaws.com';
-const PLAY_SERVER_URL = process.env.REACT_APP_PLAY_SERVER_URL || 'http://ec2-3-36-44-212.ap-northeast-2.compute.amazonaws.com:8002';
+import { STATUS_SERVER_URL, PLAY_SERVER_URL } from '../variables';
 
 
 // 오늘 날짜를 'YYYY-MM-DD' 형식의 문자열로 반환하는 헬퍼 함수
