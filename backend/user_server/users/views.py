@@ -57,7 +57,7 @@ def get_email(request):
         )
 
 
-mail_server_url = os.getenv("MAIL_API_URL", "http://mail-server:8000/email/users")
+mail_server_url = os.getenv("MAIL_API_URL", "http://mail-server:8000")
 
 
 @extend_schema(
@@ -95,7 +95,7 @@ def verify_email(request):
 
     try:
         response = requests.post(
-            mail_server_url,
+            mail_server_url + "/email/users",
             json={
                 "to": email,
                 "format": "SIGNUP_AUTH",
@@ -289,7 +289,7 @@ def login_password(request):
     # Send email with the 2FA code
     try:
         response = requests.post(
-            mail_server_url,
+            mail_server_url + "/email/status",
             json={
                 "to": email,
                 "format": "2FA_AUTH",
