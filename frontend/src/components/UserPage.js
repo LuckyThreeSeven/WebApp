@@ -3,8 +3,7 @@ import { JWT_TOKEN_KEY, JWT_TOKEN_HEADER } from '../constants';
 import BlackboxListPage from './BlackboxListPage';
 import RegisterBlackboxPage from './RegisterBlackboxPage';
 import VideoMetadataPage from './VideoMetadataPage'; // 새 컴포넌트 임포트
-
-const STATUS_SERVER_URL = process.env.REACT_APP_STATUS_SERVER_URL || 'http://ec2-43-202-76-207.ap-northeast-2.compute.amazonaws.com';
+import { STATUS_SERVER_URL } from '../variables';
 
 function UserPage({ onLogout }) {
   const [blackboxes, setBlackboxes] = useState([]);

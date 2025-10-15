@@ -1,8 +1,6 @@
 import React, { useState } from 'react';
 import { JWT_TOKEN_KEY } from '../constants';
-
-// USER_SERVER_URL
-const USER_SERVER_URL = process.env.REACT_APP_USER_SERVER_URL || 'http://localhost:8000/users';
+import { USER_SERVER_URL } from '../variables';
 
 /**
  * [1단계] 이메일과 비밀번호를 전송하여 2단계 인증 코드를 요청합니다.
