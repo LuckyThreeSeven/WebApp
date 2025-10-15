@@ -289,7 +289,7 @@ def login_password(request):
     # Send email with the 2FA code
     try:
         response = requests.post(
-            mail_server_url + "/email/status",
+            mail_server_url + "/email/users",
             json={
                 "to": email,
                 "format": "2FA_AUTH",
