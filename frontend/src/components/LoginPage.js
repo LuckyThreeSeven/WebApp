@@ -91,80 +91,73 @@ function LoginPage({ onLoginSuccess, onSwitchToSignup }) {
   };
 
   return (
-    <div className="login-container">
-      {/* --- 왼쪽 이미지 섹션 --- */}
-      <div className="login-image-section">
-        <div className="login-image-content">
-          <svg width="80" height="80" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <div className="auth-wrapper">
+      {/* --- Header --- */}
+      <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
+        <svg width="60" height="60" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M23 19C23 19.5304 22.7893 20.0391 22.4142 20.4142C22.0391 20.7893 21.5304 21 21 21H3C2.46957 21 1.96086 20.7893 1.58579 20.4142C1.21071 20.0391 1 19.5304 1 19V8C1 7.46957 1.21071 6.96086 1.58579 6.58579C1.96086 6.21071 2.46957 6 3 6H7L9 3H15L17 6H21C21.5304 6 22.0391 6.21071 22.4142 6.58579C22.7893 6.96086 23 7.46957 23 8V19Z" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
             <path d="M12 17C14.2091 17 16 15.2091 16 13C16 10.7909 14.2091 9 12 9C9.79086 9 8 10.7909 8 13C8 15.2091 9.79086 17 12 17Z" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-          </svg>
-          <h1>클라우드 블랙박스</h1>
-          <p>서비스를 이용하시려면 로그인해주세요.</p>
-        </div>
+        </svg>
+        <h1 style={{ color: 'var(--primary-color)', fontSize: '1.5rem', margin: '0.5rem 0 0' }}>클라우드 블랙박스</h1>
       </div>
 
-      {/* --- 오른쪽 로그인 폼 섹션 --- */}
-      <div className="login-form-section">
-        <div className="auth-wrapper">
-          {uiMode === 'enterCredentials' ? (
-            <>
-              <h2>로그인</h2>
-              <form onSubmit={handleCredentialsSubmit} className="auth-form">
-                <div className="input-group">
-                  <input
-                    className="auth-input"
-                    type="email"
-                    value={loginEmail}
-                    onChange={(e) => setLoginEmail(e.target.value)}
-                    placeholder="이메일"
-                    required
-                  />
-                </div>
-                <div className="input-group">
-                  <input
-                    className="auth-input"
-                    type="password"
-                    value={loginPassword}
-                    onChange={(e) => setLoginPassword(e.target.value)}
-                    placeholder="비밀번호"
-                    required
-                  />
-                </div>
-                <button type="submit" className="auth-button">
-                  다음
-                </button>
-              </form>
-            </>
-          ) : (
-            <>
-              <h2>2단계 인증</h2>
-              <form onSubmit={handleCodeSubmit} className="auth-form">
-                <p>{loginEmail}(으)로 전송된<br/>인증 코드를 입력해주세요.</p>
-                <div className="input-group">
-                  <input
-                    className="auth-input"
-                    type="text"
-                    value={verificationCode}
-                    onChange={(e) => setVerificationCode(e.target.value)}
-                    placeholder="인증 코드"
-                    required
-                  />
-                </div>
-                <button type="submit" className="auth-button">
-                  로그인
-                </button>
-              </form>
-            </>
-          )}
-
-          <div className="toggle-auth-section">
-            <span>계정이 없으신가요? </span>
-            <button onClick={onSwitchToSignup} className="toggle-auth-button">
-              회원가입
+      {/* --- Form Section --- */}
+      {uiMode === 'enterCredentials' ? (
+        <>
+          <p style={{ textAlign: 'center', marginBottom: '1.5rem', color: '#636e72' }}>서비스를 이용하시려면 로그인해주세요.</p>
+          <form onSubmit={handleCredentialsSubmit} className="auth-form">
+            <div className="input-group">
+              <input
+                className="auth-input"
+                type="email"
+                value={loginEmail}
+                onChange={(e) => setLoginEmail(e.target.value)}
+                placeholder="이메일"
+                required
+              />
+            </div>
+            <div className="input-group">
+              <input
+                className="auth-input"
+                type="password"
+                value={loginPassword}
+                onChange={(e) => setLoginPassword(e.target.value)}
+                placeholder="비밀번호"
+                required
+              />
+            </div>
+            <button type="submit" className="auth-button">
+              다음
             </button>
-          </div>
-        </div>
+          </form>
+        </>
+      ) : (
+        <>
+          <h2>2단계 인증</h2>
+          <form onSubmit={handleCodeSubmit} className="auth-form">
+            <p>{loginEmail}(으)로 전송된<br/>인증 코드를 입력해주세요.</p>
+            <div className="input-group">
+              <input
+                className="auth-input"
+                type="text"
+                value={verificationCode}
+                onChange={(e) => setVerificationCode(e.target.value)}
+                placeholder="인증 코드"
+                required
+              />
+            </div>
+            <button type="submit" className="auth-button">
+              로그인
+            </button>
+          </form>
+        </>
+      )}
+
+      <div className="toggle-auth-section">
+        <span>계정이 없으신가요? </span>
+        <button onClick={onSwitchToSignup} className="toggle-auth-button">
+          회원가입
+        </button>
       </div>
     </div>
   );

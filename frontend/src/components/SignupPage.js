@@ -172,7 +172,7 @@ function SignupPage({ onSwitchToLogin }) {
         {uiMode === 'enterEmail' && (
           <button 
             type="submit" 
-            className="auth-button" 
+            className="auth-button auth-button-secondary" 
             disabled={!signupEmail || emailError || isSendingCode}
           >
             {isSendingCode ? '전송 중...' : '인증 코드 발송'}
