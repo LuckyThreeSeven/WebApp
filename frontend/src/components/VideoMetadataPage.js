@@ -1,14 +1,16 @@
 import React, { useState, useEffect } from 'react';
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
+import '../css/custom-datepicker.css'; // Note the path correction
 import { JWT_TOKEN_KEY, JWT_TOKEN_HEADER } from '../constants';
 import { STATUS_SERVER_URL, PLAY_SERVER_URL } from '../variables';
 
 
-// 오늘 날짜를 'YYYY-MM-DD' 형식의 문자열로 반환하는 헬퍼 함수
-const getTodayDateString = () => {
-  const today = new Date();
-  const offset = today.getTimezoneOffset();
-  const todayWithOffset = new Date(today.getTime() - (offset * 60 * 1000));
-  return todayWithOffset.toISOString().split('T')[0];
+// Date object to 'YYYY-MM-DD' string
+const dateToYYYYMMDD = (date) => {
+  const offset = date.getTimezoneOffset();
+  const dateWithOffset = new Date(date.getTime() - (offset * 60 * 1000));
+  return dateWithOffset.toISOString().split('T')[0];
 };
 
 // 메타데이터를 가져오는 API 호출 함수
@@ -38,7 +40,7 @@ const fetchSignedVideoUrl = async (objectKey) => {
     headers: {
       'accept': 'application/json',
       'Content-Type': 'application/json',
-      [JWT_TOKEN_HEADER]: token, // 헤더에 토큰 추가
+      [JWT_TOKEN_HEADER]: token,
     },
     body: JSON.stringify({ object_key: objectKey }),
   });
@@ -47,7 +49,8 @@ const fetchSignedVideoUrl = async (objectKey) => {
 };
 
 function VideoMetadataPage({ blackboxId, blackboxNickname }) {
-  const [selectedDate, setSelectedDate] = useState(getTodayDateString());
+  // DatePicker uses Date objects, so we'll use a Date object for state
+  const [selectedDate, setSelectedDate] = useState(new Date());
   const [metadata, setMetadata] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -61,7 +64,7 @@ function VideoMetadataPage({ blackboxId, blackboxNickname }) {
   useEffect(() => {
     setCurrentVideoUrl(null);
     setMetadata([]);
-    setSelectedDate(getTodayDateString());
+    setSelectedDate(new Date()); // Reset to today
   }, [blackboxId]);
   
   const handleFetchMetadata = async (e) => {
@@ -77,7 +80,8 @@ function VideoMetadataPage({ blackboxId, blackboxNickname }) {
     setCurrentVideoUrl(null);
 
     try {
-      const data = await fetchVideoMetadata(blackboxId, selectedDate);
+      const dateString = dateToYYYYMMDD(selectedDate);
+      const data = await fetchVideoMetadata(blackboxId, dateString);
       setMetadata(data);
     } catch (err) {
       setError(err.message);
@@ -113,11 +117,11 @@ function VideoMetadataPage({ blackboxId, blackboxNickname }) {
       </div>
       <div className="form-wrapper">
         <form onSubmit={handleFetchMetadata} className="date-selector-form">
-          <input 
-            type="date" 
-            value={selectedDate}
-            onChange={(e) => setSelectedDate(e.target.value)}
-            className="date-input"
+          <DatePicker
+            selected={selectedDate}
+            onChange={(date) => setSelectedDate(date)}
+            dateFormat="yyyy-MM-dd"
+            className="date-input-custom" // Use the new custom class
             required
           />
           <button type="submit" className="auth-button" disabled={isLoading}>
@@ -139,7 +143,7 @@ function VideoMetadataPage({ blackboxId, blackboxNickname }) {
       
       {metadata.length > 0 && (
         <div className="metadata-list-container">
-          <h3>'{selectedDate}' 영상 목록</h3>
+          <h3>'{dateToYYYYMMDD(selectedDate)}' 영상 목록</h3>
           <ul className="metadata-list">
             {metadata.map((item) => (
               <li key={item.object_key} className="metadata-item">
@@ -165,4 +169,3 @@ function VideoMetadataPage({ blackboxId, blackboxNickname }) {
 }
 
 export default VideoMetadataPage;
-
