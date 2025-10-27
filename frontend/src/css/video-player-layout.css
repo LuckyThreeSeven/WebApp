@@ -1,0 +1,72 @@
+/* src/css/video-player-layout.css */
+
+.video-section-container {
+  display: flex;
+  flex-direction: row;
+  gap: 2rem;
+  margin-top: 2rem;
+  align-items: flex-start; /* Align items to the top */
+}
+
+.video-player-main {
+  flex-grow: 1; /* Player takes up available space */
+  max-width: 75%; /* Prevent it from getting too large */
+}
+
+.video-playlist-sidebar {
+  width: 25%;
+  min-width: 250px; /* Ensure sidebar is not too narrow */
+  max-height: 600px; /* Set a max height for the playlist */
+  overflow-y: auto; /* Make it scrollable */
+  background-color: var(--card-background);
+  border-radius: 12px;
+  border: 1px solid var(--input-border-color);
+  padding: 1rem;
+}
+
+.video-playlist-sidebar h3 {
+  margin-top: 0;
+  margin-bottom: 1rem;
+  color: var(--text-color);
+  font-size: 1.2rem;
+  border-bottom: 1px solid var(--input-border-color);
+  padding-bottom: 0.8rem;
+}
+
+.video-playlist-sidebar .metadata-list {
+  list-style: none;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.video-playlist-sidebar .metadata-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.8rem 1rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  border: 1px solid transparent;
+}
+
+.video-playlist-sidebar .metadata-item:hover {
+  background-color: #f0f4f8;
+}
+
+/* Style for the currently playing item */
+.video-playlist-sidebar .metadata-item.active {
+  background-color: rgba(22, 160, 133, 0.1);
+  border-color: rgba(22, 160, 133, 0.3);
+  font-weight: 500;
+}
+
+.video-playlist-sidebar .metadata-item.active .record-time {
+  color: var(--primary-color);
+}
+
+.video-playlist-sidebar .play-button {
+    display: none; /* Hide the play button in the new playlist UI */
+}

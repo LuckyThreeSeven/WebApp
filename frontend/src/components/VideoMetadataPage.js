@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
-import '../css/custom-datepicker.css'; // Note the path correction
+import '../css/custom-datepicker.css';
+import '../css/video-player-layout.css'; // Import the new layout CSS
 import { JWT_TOKEN_KEY, JWT_TOKEN_HEADER } from '../constants';
 import { STATUS_SERVER_URL, PLAY_SERVER_URL } from '../variables';
-
 
 // Date object to 'YYYY-MM-DD' string
 const dateToYYYYMMDD = (date) => {
@@ -13,14 +13,12 @@ const dateToYYYYMMDD = (date) => {
   return dateWithOffset.toISOString().split('T')[0];
 };
 
-// 메타데이터를 가져오는 API 호출 함수
+// ... (fetch API functions remain the same) ...
 const fetchVideoMetadata = async (blackboxId, date) => {
   const token = localStorage.getItem(JWT_TOKEN_KEY);
   if (!token) throw new Error('인증 토큰이 없습니다.');
-  
   const formattedDate = `${date}T00:00:00`;
   const url = `${STATUS_SERVER_URL}/metadata?blackboxId=${blackboxId}&date=${formattedDate}`;
-
   const response = await fetch(url, {
     method: 'GET',
     headers: { 'accept': '*/*', [JWT_TOKEN_HEADER]: token },
@@ -30,11 +28,9 @@ const fetchVideoMetadata = async (blackboxId, date) => {
   return response.json();
 };
 
-// Signed URL을 가져오는 API 호출 함수
 const fetchSignedVideoUrl = async (objectKey) => {
   const token = localStorage.getItem(JWT_TOKEN_KEY);
   if (!token) throw new Error('인증 토큰이 없습니다.');
-
   const response = await fetch(`${PLAY_SERVER_URL}/url`, {
     method: 'POST',
     headers: {
@@ -48,23 +44,21 @@ const fetchSignedVideoUrl = async (objectKey) => {
   return response.json();
 };
 
+
 function VideoMetadataPage({ blackboxId, blackboxNickname }) {
-  // DatePicker uses Date objects, so we'll use a Date object for state
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [metadata, setMetadata] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  // 영상 재생 관련 상태
   const [currentVideoUrl, setCurrentVideoUrl] = useState(null);
   const [isFetchingUrl, setIsFetchingUrl] = useState(false);
   const [activeObjectKey, setActiveObjectKey] = useState(null);
 
-  // 블랙박스 ID가 변경될 때마다 비디오 플레이어 초기화
   useEffect(() => {
     setCurrentVideoUrl(null);
     setMetadata([]);
-    setSelectedDate(new Date()); // Reset to today
+    setSelectedDate(new Date());
   }, [blackboxId]);
   
   const handleFetchMetadata = async (e) => {
@@ -73,12 +67,11 @@ function VideoMetadataPage({ blackboxId, blackboxNickname }) {
       alert('조회할 날짜를 선택해주세요.');
       return;
     }
-    
     setIsLoading(true);
     setError(null);
     setMetadata([]);
     setCurrentVideoUrl(null);
-
+    setActiveObjectKey(null); // Reset active key
     try {
       const dateString = dateToYYYYMMDD(selectedDate);
       const data = await fetchVideoMetadata(blackboxId, dateString);
@@ -90,8 +83,10 @@ function VideoMetadataPage({ blackboxId, blackboxNickname }) {
     }
   };
 
-  // 재생 버튼 클릭 핸들러
   const handlePlayClick = async (objectKey) => {
+    // Prevent re-fetching if the same video is clicked
+    if (objectKey === activeObjectKey && currentVideoUrl) return;
+
     setIsFetchingUrl(true);
     setActiveObjectKey(objectKey);
     setCurrentVideoUrl(null);
@@ -110,6 +105,20 @@ function VideoMetadataPage({ blackboxId, blackboxNickname }) {
     }
   };
 
+  // Auto-play next video logic
+  const handleVideoEnded = () => {
+    const currentIndex = metadata.findIndex(item => item.object_key === activeObjectKey);
+    const nextIndex = currentIndex + 1;
+
+    if (nextIndex < metadata.length) {
+      const nextVideo = metadata[nextIndex];
+      handlePlayClick(nextVideo.object_key);
+    } else {
+      // Optional: handle when the playlist ends
+      console.log("Playlist finished.");
+    }
+  };
+
   return (
     <div className="metadata-page-container">
       <div className="section-header">
@@ -121,7 +130,7 @@ function VideoMetadataPage({ blackboxId, blackboxNickname }) {
             selected={selectedDate}
             onChange={(date) => setSelectedDate(date)}
             dateFormat="yyyy-MM-dd"
-            className="date-input-custom" // Use the new custom class
+            className="date-input-custom"
             required
           />
           <button type="submit" className="auth-button" disabled={isLoading}>
@@ -130,36 +139,52 @@ function VideoMetadataPage({ blackboxId, blackboxNickname }) {
         </form>
       </div>
 
-      {/* --- 비디오 플레이어 섹션 --- */}
-      {currentVideoUrl && (
-        <div className="video-player-wrapper">
-            <video src={currentVideoUrl} controls autoPlay muted playsInline key={currentVideoUrl}>
-                Your browser does not support the video tag.
-            </video>
-        </div>
-      )}
-
       {error && <p className="error-message main-error-text">{error}</p>}
-      
-      {metadata.length > 0 && (
-        <div className="metadata-list-container">
-          <h3>'{dateToYYYYMMDD(selectedDate)}' 영상 목록</h3>
-          <ul className="metadata-list">
-            {metadata.map((item) => (
-              <li key={item.object_key} className="metadata-item">
-                <span className="record-time">{new Date(item.created_at).toLocaleTimeString('ko-KR')}</span>
-                <button 
-                    onClick={() => handlePlayClick(item.object_key)}
-                    className="play-button"
-                    disabled={isFetchingUrl && activeObjectKey === item.object_key}
-                >
-                  {isFetchingUrl && activeObjectKey === item.object_key ? '로딩중' : '재생'}
-                </button>
-              </li>
-            ))}
-          </ul>
+
+      <div className="video-section-container">
+        {/* Left Column: Video Player */}
+        <div className="video-player-main">
+          {currentVideoUrl ? (
+            <div className="video-player-wrapper">
+              <video 
+                src={currentVideoUrl} 
+                controls 
+                autoPlay 
+                muted 
+                playsInline 
+                key={currentVideoUrl}
+                onEnded={handleVideoEnded} // Attach the onEnded event handler
+              >
+                Your browser does not support the video tag.
+              </video>
+            </div>
+          ) : (
+            <div className="welcome-view" style={{minHeight: '400px'}}>
+              <p>재생할 영상을 목록에서 선택해주세요.</p>
+            </div>
+          )}
         </div>
-      )}
+
+        {/* Right Column: Video Playlist */}
+        {metadata.length > 0 && (
+          <aside className="video-playlist-sidebar">
+            <h3>'{dateToYYYYMMDD(selectedDate)}' 영상 목록</h3>
+            <ul className="metadata-list">
+              {metadata.map((item) => (
+                <li 
+                  key={item.object_key} 
+                  className={`metadata-item ${item.object_key === activeObjectKey ? 'active' : ''}`}
+                  onClick={() => handlePlayClick(item.object_key)}
+                >
+                  <span className="record-time">{new Date(item.created_at).toLocaleTimeString('ko-KR')}</span>
+                  {/* The play button is now hidden via CSS, the whole item is clickable */}
+                  <button className="play-button">재생</button>
+                </li>
+              ))}
+            </ul>
+          </aside>
+        )}
+      </div>
 
       {!isLoading && metadata.length === 0 && selectedDate && !error && (
          <p className="empty-metadata-message">해당 날짜에 조회된 영상이 없습니다.</p>
