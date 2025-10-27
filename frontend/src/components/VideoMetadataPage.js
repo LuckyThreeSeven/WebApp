@@ -50,6 +50,7 @@ function VideoMetadataPage({ blackboxId, blackboxNickname }) {
   const [metadata, setMetadata] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [searchAttempted, setSearchAttempted] = useState(false); // Track if a search has been made
 
   const [currentVideoUrl, setCurrentVideoUrl] = useState(null);
   const [isFetchingUrl, setIsFetchingUrl] = useState(false);
@@ -59,6 +60,7 @@ function VideoMetadataPage({ blackboxId, blackboxNickname }) {
     setCurrentVideoUrl(null);
     setMetadata([]);
     setSelectedDate(new Date());
+    setSearchAttempted(false); // Reset on blackbox change
   }, [blackboxId]);
   
   const handleFetchMetadata = async (e) => {
@@ -68,10 +70,11 @@ function VideoMetadataPage({ blackboxId, blackboxNickname }) {
       return;
     }
     setIsLoading(true);
+    setSearchAttempted(true); // Mark that a search has been attempted
     setError(null);
     setMetadata([]);
     setCurrentVideoUrl(null);
-    setActiveObjectKey(null); // Reset active key
+    setActiveObjectKey(null);
     try {
       const dateString = dateToYYYYMMDD(selectedDate);
       const data = await fetchVideoMetadata(blackboxId, dateString);
@@ -84,7 +87,7 @@ function VideoMetadataPage({ blackboxId, blackboxNickname }) {
   };
 
   const handlePlayClick = async (objectKey) => {
-    // Prevent re-fetching if the same video is clicked
+    if (isFetchingUrl) return;
     if (objectKey === activeObjectKey && currentVideoUrl) return;
 
     setIsFetchingUrl(true);
@@ -114,9 +117,49 @@ function VideoMetadataPage({ blackboxId, blackboxNickname }) {
       const nextVideo = metadata[nextIndex];
       handlePlayClick(nextVideo.object_key);
     } else {
-      // Optional: handle when the playlist ends
       console.log("Playlist finished.");
     }
+  };
+
+  // Helper to render the status/content in the main player area
+  const renderMainContent = () => {
+    if (currentVideoUrl) {
+      return (
+        <div className="video-player-wrapper">
+          <video 
+            src={currentVideoUrl} 
+            controls 
+            autoPlay 
+            muted 
+            playsInline 
+            key={currentVideoUrl}
+            onEnded={handleVideoEnded}
+          >
+            Your browser does not support the video tag.
+          </video>
+        </div>
+      );
+    }
+    if (metadata.length > 0) {
+      return (
+        <div className="welcome-view" style={{minHeight: '400px'}}>
+          <p>재생할 영상을 목록에서 선택해주세요.</p>
+        </div>
+      );
+    }
+    if (searchAttempted && metadata.length === 0) {
+      return (
+        <div className="welcome-view" style={{minHeight: '400px'}}>
+          <p>해당 날짜에 조회된 영상이 없습니다.</p>
+        </div>
+      );
+    }
+    // Initial state before any search
+    return (
+      <div className="welcome-view" style={{minHeight: '400px'}}>
+        <p>조회할 날짜를 선택하고 '메타데이터 조회'를 눌러주세요.</p>
+      </div>
+    );
   };
 
   return (
@@ -140,27 +183,9 @@ function VideoMetadataPage({ blackboxId, blackboxNickname }) {
       {error && <p className="error-message main-error-text">{error}</p>}
 
       <div className="video-section-container">
-        {/* Left Column: Video Player */}
+        {/* Left Column: Video Player / Status Message */}
         <div className="video-player-main">
-          {currentVideoUrl ? (
-            <div className="video-player-wrapper">
-              <video 
-                src={currentVideoUrl} 
-                controls 
-                autoPlay 
-                muted 
-                playsInline 
-                key={currentVideoUrl}
-                onEnded={handleVideoEnded} // Attach the onEnded event handler
-              >
-                Your browser does not support the video tag.
-              </video>
-            </div>
-          ) : (
-            <div className="welcome-view" style={{minHeight: '400px'}}>
-              <p>재생할 영상을 목록에서 선택해주세요.</p>
-            </div>
-          )}
+          {renderMainContent()}
         </div>
 
         {/* Right Column: Video Playlist */}
@@ -175,7 +200,6 @@ function VideoMetadataPage({ blackboxId, blackboxNickname }) {
                   onClick={() => isFetchingUrl ? null : handlePlayClick(item.object_key)}
                 >
                   <span className="record-time">{new Date(item.created_at).toLocaleTimeString('ko-KR')}</span>
-                  {/* The play button is now hidden via CSS, the whole item is clickable */}
                   <button className="play-button">재생</button>
                 </li>
               ))}
@@ -184,9 +208,10 @@ function VideoMetadataPage({ blackboxId, blackboxNickname }) {
         )}
       </div>
 
-      {!isLoading && metadata.length === 0 && selectedDate && !error && (
+      {/* This message is now handled inside renderMainContent */}
+      {/* {!isLoading && metadata.length === 0 && selectedDate && !error && (
          <p className="empty-metadata-message">해당 날짜에 조회된 영상이 없습니다.</p>
-      )}
+      )} */}
     </div>
   );
 }
