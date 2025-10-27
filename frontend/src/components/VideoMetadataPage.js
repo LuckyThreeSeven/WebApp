@@ -123,8 +123,6 @@ function VideoMetadataPage({ blackboxId, blackboxNickname }) {
     <div className="metadata-page-container">
       <div className="section-header">
         <h2>{blackboxNickname || '블랙박스'} 영상 조회</h2>
-      </div>
-      <div className="form-wrapper">
         <form onSubmit={handleFetchMetadata} className="date-selector-form">
           <DatePicker
             selected={selectedDate}

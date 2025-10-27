@@ -307,6 +307,9 @@ body {
 }
 
 .metadata-page-container .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     border-bottom: 1px solid var(--input-border-color);
     padding-bottom: 1rem;
     margin-bottom: 2rem;
@@ -316,11 +319,6 @@ body {
     display: flex;
     gap: 1rem;
     align-items: center;
-    background-color: var(--card-background);
-    padding: 1rem;
-    border-radius: 12px;
-    border: 1px solid var(--input-border-color);
-    max-width: 500px;
 }
 
 .date-input {
