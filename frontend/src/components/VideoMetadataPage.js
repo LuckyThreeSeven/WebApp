@@ -173,8 +173,8 @@ function VideoMetadataPage({ blackboxId, blackboxNickname }) {
               {metadata.map((item) => (
                 <li 
                   key={item.object_key} 
-                  className={`metadata-item ${item.object_key === activeObjectKey ? 'active' : ''}`}
-                  onClick={() => handlePlayClick(item.object_key)}
+                  className={`metadata-item ${item.object_key === activeObjectKey ? 'active' : ''} ${isFetchingUrl ? 'disabled' : ''}`}
+                  onClick={() => isFetchingUrl ? null : handlePlayClick(item.object_key)}
                 >
                   <span className="record-time">{new Date(item.created_at).toLocaleTimeString('ko-KR')}</span>
                   {/* The play button is now hidden via CSS, the whole item is clickable */}
