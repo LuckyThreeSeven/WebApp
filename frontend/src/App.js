@@ -14,6 +14,14 @@ function App() {
     }
   }, []);
 
+  useEffect(() => {
+    if (isLoggedIn) {
+      document.body.classList.remove('auth-layout');
+    } else {
+      document.body.classList.add('auth-layout');
+    }
+  }, [isLoggedIn]);
+
   const handleLoginSuccess = () => {
     setIsLoggedIn(true);
   };
