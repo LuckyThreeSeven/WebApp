@@ -42,7 +42,7 @@ class SMTPConnection:
             self.validate()
         except SMTPConnectionError:
             if self.connection:
-                self.close()
+                self.quit()
             self.connection = smtplib.SMTP_SSL(self.config.host, self.config.port)
             self.connection.login(self.config.user, self.config.password)
         except Exception as e:
