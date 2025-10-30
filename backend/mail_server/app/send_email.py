@@ -20,6 +20,7 @@ def send_gmail(smtp_cp: SMTPConnectionPool, to: str, subject: str, context: str)
             logger.info("Retrying to send email, attempts left: %d", retry)
     smtp_cp.release(conn)
 
+
 def _send_to_connection(conn: SMTPConnection, to: str, subject: str, context: str):
     try:
         conn.send(to, subject, context)
