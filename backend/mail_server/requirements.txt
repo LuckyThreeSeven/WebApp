@@ -4,3 +4,4 @@ pydantic[email]
 httpx
 prometheus-fastapi-instrumentator==1.1.1
 prometheus-client
+python-dotenv

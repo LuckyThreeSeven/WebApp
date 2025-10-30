@@ -5,6 +5,9 @@ import os
 import httpx
 from prometheus_fastapi_instrumentator import Instrumentator
 import smtplib
+from dotenv import load_dotenv
+
+load_dotenv()
 
 app = FastAPI()
 
