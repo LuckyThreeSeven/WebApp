@@ -22,12 +22,13 @@ def send_gmail(to: str, subject: str, context: str):
     msg["From"] = GMAIL_USER
     msg["To"] = to
 
+    start_time = time.time()
     try:
         with smtplib.SMTP_SSL("smtp.gmail.com", 465) as smtp_server:
             smtp_server.login(GMAIL_USER, GMAIL_PASSWORD)
-            start_time = time.time()
             smtp_server.sendmail(GMAIL_USER, to, msg.as_string())
-            duration = time.time() - start_time
-            EMAIL_SEND_DURATION.observe(duration)
     except Exception as e:
         raise e
+    finally:
+        duration = time.time() - start_time
+        EMAIL_SEND_DURATION.observe(duration)
