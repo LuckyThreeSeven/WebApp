@@ -30,6 +30,26 @@ async def startup_event(app: FastAPI):
 app = FastAPI(lifespan=startup_event)
 Instrumentator().instrument(app).expose(app)  # Add prometheus
 
+smtp_server = None
+
+
+@app.on_event("startup")
+async def startup_event():
+    global smtp_server
+    GMAIL_USER = os.getenv("GMAIL_USER")
+    GMAIL_PASSWORD = os.getenv("GMAIL_PASSWORD")
+    if not GMAIL_USER or not GMAIL_PASSWORD:
+        raise ValueError("Gmail credentials are not configured on the server.")
+    smtp_server = smtplib.SMTP_SSL("smtp.gmail.com", 465)
+    smtp_server.login(GMAIL_USER, GMAIL_PASSWORD)
+
+
+@app.on_event("shutdown")
+async def shutdown_event():
+    global smtp_server
+    if smtp_server:
+        smtp_server.quit()
+
 
 class EmailSchema(BaseModel):
     to: EmailStr
