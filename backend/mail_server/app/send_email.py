@@ -3,6 +3,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+
 def send_gmail(smtp_cp: SMTPConnectionPool, to: str, subject: str, context: str):
     logger.info("send mail to %s with subject %s", to, subject)
     if smtp_cp is None:
@@ -17,6 +18,7 @@ def send_gmail(smtp_cp: SMTPConnectionPool, to: str, subject: str, context: str)
             retry -= 1
             logger.info("Retrying to send email, attempts left: %d", retry)
     smtp_cp.release(conn)
+
 
 def _send_to_connection(conn: SMTPConnection, to: str, subject: str, context: str):
     try:

@@ -12,6 +12,7 @@ logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 smtp_cp = None
 
+
 @asynccontextmanager
 async def startup_event(app: FastAPI):
     global smtp_cp
@@ -25,20 +26,25 @@ async def startup_event(app: FastAPI):
     yield
     smtp_cp.quit()
 
+
 app = FastAPI(lifespan=startup_event)
 Instrumentator().instrument(app).expose(app)  # Add prometheus
+
 
 class EmailSchema(BaseModel):
     to: EmailStr
     subject: str
     context: str
 
+
 class EmailRequest(BaseModel):
     to: str
     format: str
     parameters: list
 
+
 user_server_url = os.getenv("USER_SERVER_URL", "http://user-server:8000")
+
 
 @app.get("/email")
 def health():

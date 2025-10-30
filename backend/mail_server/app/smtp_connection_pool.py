@@ -10,8 +10,10 @@ EMAIL_SEND_DURATION = Histogram(
     "email_send_duration_seconds", "Time spent sending an email"
 )
 
+
 class SMTPConnectionError(Exception):
     pass
+
 
 class SMTPConfig:
     def __init__(self, host, port, user, password):
@@ -19,6 +21,7 @@ class SMTPConfig:
         self.port = port
         self.user = user
         self.password = password
+
 
 class SMTPConnection:
     def __init__(self, config: SMTPConfig):
@@ -64,6 +67,7 @@ class SMTPConnection:
         if self.connection:
             self.connection.quit()
             self.connection = None
+
 
 class SMTPConnectionPool:
     def __init__(self, config: SMTPConfig, pool_size=5):
