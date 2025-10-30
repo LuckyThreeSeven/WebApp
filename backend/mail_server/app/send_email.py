@@ -1,31 +1,29 @@
-import smtplib
-import os
-from email.mime.text import MIMEText
-import time
-from prometheus_client import Histogram
+from smtp_connection_pool import SMTPConnectionPool, SMTPConnection
+import logging
 
-# Prometheus Histogram to measure the duration of sending emails
-EMAIL_SEND_DURATION = Histogram(
-    "email_send_duration_seconds", "Time spent sending an email"
-)
+logger = logging.getLogger(__name__)
 
 
-def send_gmail(smtp_server: smtplib.SMTP_SSL, to: str, subject: str, context: str):
-    GMAIL_USER = os.getenv("GMAIL_USER")
+def send_gmail(smtp_cp: SMTPConnectionPool, to: str, subject: str, context: str):
+    logger.info("send mail to %s with subject %s", to, subject)
+    if smtp_cp is None:
+        raise ValueError("SMTP Connection Pool is not initialized")
 
-    if not GMAIL_USER:
-        raise ValueError("Gmail credentials are not configured on the server.")
+    retry = 1
+    conn = smtp_cp.acquire()
+    while retry > 0:
+        if _send_to_connection(conn, to, subject, context):
+            break
+        else:
+            retry -= 1
+            logger.info("Retrying to send email, attempts left: %d", retry)
+    smtp_cp.release(conn)
 
-    msg = MIMEText(context)
-    msg["Subject"] = subject
-    msg["From"] = GMAIL_USER
-    msg["To"] = to
 
-    start_time = time.time()
+def _send_to_connection(conn: SMTPConnection, to: str, subject: str, context: str):
     try:
-        smtp_server.sendmail(GMAIL_USER, to, msg.as_string())
+        conn.send(to, subject, context)
+        return True
     except Exception as e:
-        raise e
-    finally:
-        duration = time.time() - start_time
-        EMAIL_SEND_DURATION.observe(duration)
+        logger.info("Failed to send email via SMTP: %s", e)
+        return False
