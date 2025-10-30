@@ -65,7 +65,10 @@ class SMTPConnection:
 
     def quit(self):
         if self.connection:
-            self.connection.quit()
+            try:
+                self.connection.quit()
+            except Exception:
+                pass
             self.connection = None
 
 
