@@ -1,6 +1,13 @@
 import smtplib
 import os
 from email.mime.text import MIMEText
+import time
+from prometheus_client import Histogram
+
+# Prometheus Histogram to measure the duration of sending emails
+EMAIL_SEND_DURATION = Histogram(
+    "email_send_duration_seconds", "Time spent sending an email"
+)
 
 
 def send_gmail(to: str, subject: str, context: str):
@@ -15,9 +22,13 @@ def send_gmail(to: str, subject: str, context: str):
     msg["From"] = GMAIL_USER
     msg["To"] = to
 
+    start_time = time.time()
     try:
         with smtplib.SMTP_SSL("smtp.gmail.com", 465) as smtp_server:
             smtp_server.login(GMAIL_USER, GMAIL_PASSWORD)
             smtp_server.sendmail(GMAIL_USER, to, msg.as_string())
     except Exception as e:
         raise e
+    finally:
+        duration = time.time() - start_time
+        EMAIL_SEND_DURATION.observe(duration)
