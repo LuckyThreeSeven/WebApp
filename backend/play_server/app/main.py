@@ -112,3 +112,4 @@ def get_signed_urls(request: ObjectKeysRequest):
         signed_url, expire_time = generate_signed_url(key)
         response_urls.append({"signed_url": signed_url, "expire_time": expire_time})
     return {"signed_urls": response_urls}
+# argocd test
