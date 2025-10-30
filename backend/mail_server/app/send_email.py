@@ -16,7 +16,10 @@ def send_gmail(smtp_cp: SMTPConnectionPool, to: str, subject: str, context: str)
             break
         else:
             retry -= 1
-            conn.connect()
+            try:
+                conn.connect()
+            except Exception as e:
+                logger.info("Failed to reconnect SMTP connection: %s", e)
             logger.info("Retrying to send email, attempts left: %d", retry)
     smtp_cp.release(conn)
 
