@@ -4,28 +4,8 @@ from send_email import send_gmail
 import os
 import httpx
 from prometheus_fastapi_instrumentator import Instrumentator
-import smtplib
-from contextlib import asynccontextmanager
 
-
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    # startup
-    global smtp_server
-    GMAIL_USER = os.getenv("GMAIL_USER")
-    GMAIL_PASSWORD = os.getenv("GMAIL_PASSWORD")
-
-    if not GMAIL_USER or not GMAIL_PASSWORD:
-        raise ValueError("Gmail credentials are not configured on the server.")
-
-    smtp_server = smtplib.SMTP_SSL("smtp.gmail.com", 465)
-    smtp_server.login(GMAIL_USER, GMAIL_PASSWORD)
-    yield
-    # shutdown
-    smtp_server.quit()
-
-
-app = FastAPI(lifespan=lifespan)
+app = FastAPI()
 
 Instrumentator().instrument(app).expose(app)  # Add prometheus
 
@@ -59,7 +39,6 @@ async def send_email_users(email: EmailRequest):
             context=str(email.parameters),
         )
         send_gmail(
-            smtp_server=smtp_server,
             to=email_to_send.to,
             subject=email_to_send.subject,
             context=email_to_send.context,
@@ -92,7 +71,6 @@ async def send_email_status(email: EmailRequest):
             context=str(email.parameters),
         )
         send_gmail(
-            smtp_server=smtp_server,
             to=email_to_send.to,
             subject=email_to_send.subject,
             context=email_to_send.context,

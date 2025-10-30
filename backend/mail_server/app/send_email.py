@@ -10,11 +10,12 @@ EMAIL_SEND_DURATION = Histogram(
 )
 
 
-def send_gmail(smtp_server: smtplib.SMTP, to: str, subject: str, context: str):
+def send_gmail(to: str, subject: str, context: str):
     GMAIL_USER = os.getenv("GMAIL_USER")
+    GMAIL_PASSWORD = os.getenv("GMAIL_PASSWORD")
 
-    if not GMAIL_USER:
-        raise ValueError("Gmail user is not configured on the server.")
+    if not GMAIL_USER or not GMAIL_PASSWORD:
+        raise ValueError("Gmail credentials are not configured on the server.")
 
     msg = MIMEText(context)
     msg["Subject"] = subject
@@ -22,9 +23,11 @@ def send_gmail(smtp_server: smtplib.SMTP, to: str, subject: str, context: str):
     msg["To"] = to
 
     try:
-        start_time = time.time()
-        smtp_server.sendmail(GMAIL_USER, to, msg.as_string())
-        duration = time.time() - start_time
-        EMAIL_SEND_DURATION.observe(duration)
+        with smtplib.SMTP_SSL("smtp.gmail.com", 465) as smtp_server:
+            smtp_server.login(GMAIL_USER, GMAIL_PASSWORD)
+            start_time = time.time()
+            smtp_server.sendmail(GMAIL_USER, to, msg.as_string())
+            duration = time.time() - start_time
+            EMAIL_SEND_DURATION.observe(duration)
     except Exception as e:
         raise e
