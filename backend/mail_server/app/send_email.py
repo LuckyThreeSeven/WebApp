@@ -9,19 +9,24 @@ def send_gmail(smtp_cp: SMTPConnectionPool, to: str, subject: str, context: str)
     if smtp_cp is None:
         raise ValueError("SMTP Connection Pool is not initialized")
 
-    retry = 1
+    trial = 3
     conn = smtp_cp.acquire()
-    while retry > 0:
+    while trial > 0:
         if _send_to_connection(conn, to, subject, context):
             break
         else:
-            retry -= 1
+            trial -= 1
             try:
                 conn.connect()
             except Exception as e:
                 logger.info("Failed to reconnect SMTP connection: %s", e)
-            logger.info("Retrying to send email, attempts left: %d", retry)
+            if trial > 0:
+                logger.info("Retrying to send email, attempts left: %d", trial)
+            else:
+                logger.info("All attempts to send email failed")
     smtp_cp.release(conn)
+    if trial == 0:
+        raise RuntimeError("Failed to send email after multiple attempts")
 
 
 def _send_to_connection(conn: SMTPConnection, to: str, subject: str, context: str):
