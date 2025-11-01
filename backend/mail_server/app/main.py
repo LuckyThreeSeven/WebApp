@@ -30,26 +30,6 @@ async def startup_event(app: FastAPI):
 app = FastAPI(lifespan=startup_event)
 Instrumentator().instrument(app).expose(app)  # Add prometheus
 
-smtp_server = None
-
-
-@app.on_event("startup")
-async def startup_event():
-    global smtp_server
-    GMAIL_USER = os.getenv("GMAIL_USER")
-    GMAIL_PASSWORD = os.getenv("GMAIL_PASSWORD")
-    if not GMAIL_USER or not GMAIL_PASSWORD:
-        raise ValueError("Gmail credentials are not configured on the server.")
-    smtp_server = smtplib.SMTP_SSL("smtp.gmail.com", 465)
-    smtp_server.login(GMAIL_USER, GMAIL_PASSWORD)
-
-
-@app.on_event("shutdown")
-async def shutdown_event():
-    global smtp_server
-    if smtp_server:
-        smtp_server.quit()
-
 
 class EmailSchema(BaseModel):
     to: EmailStr
@@ -73,6 +53,7 @@ def health():
 
 @app.post("/email/users")
 async def send_email_users(email: EmailRequest):
+    logger.info("received email request: %s", email)
     try:
         email_to_send = EmailSchema(
             to=email.to,
@@ -99,11 +80,12 @@ async def send_email_users(email: EmailRequest):
 
 @app.post("/email/status")
 async def send_email_status(email: EmailRequest):
+    logger.info("received email request: %s", email)
+    url_for_email = f"{user_server_url}/users/email?uid={email.to}"
+    logger.info("fetching email from URL: %s", url_for_email)
     try:
         async with httpx.AsyncClient() as client:
-            response = await client.get(
-                f"{user_server_url}/users/email/?uid={email.to}"
-            )
+            response = await client.get(url_for_email)
             response.raise_for_status()
             receiver = response.json()["email"]
 
