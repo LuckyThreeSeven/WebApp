@@ -81,7 +81,7 @@ async def send_email_users(email: EmailRequest):
 @app.post("/email/status")
 async def send_email_status(email: EmailRequest):
     logger.info("received email request: %s", email)
-    url_for_email = f"{user_server_url}/users/email?uid={email.to}"
+    url_for_email = f"{user_server_url}/users/email/?uid={email.to}"
     logger.info("fetching email from URL: %s", url_for_email)
     try:
         async with httpx.AsyncClient() as client:
