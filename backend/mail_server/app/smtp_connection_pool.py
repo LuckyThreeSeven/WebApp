@@ -50,7 +50,7 @@ class SMTPConnection:
             raise SMTPConnectionError("Failed to connect to SMTP server")
 
     def send(self, to_addr, subject, msg):
-        msg = MIMEText(msg)
+        msg = MIMEText(msg, "html")
         msg["Subject"] = subject
         msg["From"] = self.config.user
         msg["To"] = to_addr
