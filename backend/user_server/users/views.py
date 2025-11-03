@@ -2,11 +2,7 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
 from .models import User
-from .serializers import (
-    EmailSerializer,
-    UserCreateSerializer,
-    VerifyEmailSerializer,
-)
+from .serializers import EmailSerializer, UserCreateSerializer, VerifyEmailSerializer
 from drf_spectacular.utils import extend_schema
 import random
 import string
@@ -81,8 +77,7 @@ def verify_email(request):
 
     if User.objects.filter(email=email).exists():
         return Response(
-            {"error": "이미 가입된 이메일입니다."},
-            status=status.HTTP_400_BAD_REQUEST,
+            {"error": "이미 가입된 이메일입니다."}, status=status.HTTP_400_BAD_REQUEST
         )
 
     verification_code = "".join(random.choices(string.digits, k=5))
@@ -186,8 +181,7 @@ def confirm_email(request):
         pass
 
     return Response(
-        {"message": "이메일 인증이 완료되었습니다."},
-        status=status.HTTP_200_OK,
+        {"message": "이메일 인증이 완료되었습니다."}, status=status.HTTP_200_OK
     )
 
 
@@ -219,8 +213,7 @@ def signup(request):
         or email != session_email
     ):
         return Response(
-            {"error": "이메일 인증이 필요합니다."},
-            status=status.HTTP_400_BAD_REQUEST,
+            {"error": "이메일 인증이 필요합니다."}, status=status.HTTP_400_BAD_REQUEST
         )
 
     signup_expiry = timezone.datetime.fromisoformat(signup_expiry_str)
@@ -290,11 +283,7 @@ def login_password(request):
     try:
         response = requests.post(
             mail_server_url + "/email/users",
-            json={
-                "to": email,
-                "format": "2FA_AUTH",
-                "parameters": [verification_code],
-            },
+            json={"to": email, "format": "2FA_AUTH", "parameters": [verification_code]},
             timeout=15,
         )
         if response.status_code != 200:
@@ -390,9 +379,6 @@ def login_verify(request):
     token = jwtManager.create_token(str(user.uid))
 
     return Response(
-        {
-            "message": "로그인이 완료되었습니다.",
-            "token": str(token),
-        },
+        {"message": "로그인이 완료되었습니다.", "token": str(token)},
         status=status.HTTP_200_OK,
     )

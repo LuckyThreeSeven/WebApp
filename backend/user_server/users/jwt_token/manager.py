@@ -21,8 +21,7 @@ TOKEN_LIFETIME_DAY: 토큰 유효기간 (기본값: 3일)
 def generate_rsa_keys():
     if "PRIVATE_KEY" in os.environ and "PUBLIC_KEY" in os.environ:
         private_key = serialization.load_pem_private_key(
-            os.environ["PRIVATE_KEY"].encode("utf-8"),
-            password=None,
+            os.environ["PRIVATE_KEY"].encode("utf-8"), password=None
         )
         public_key = serialization.load_pem_public_key(
             os.environ["PUBLIC_KEY"].encode("utf-8")
@@ -33,10 +32,7 @@ def generate_rsa_keys():
             "!! RSA keys not found in environment variables. Generating new keys. "
             + "if you are in production, please set PRIVATE_KEY and PUBLIC_KEY environment variables !!"
         )
-        private_key = rsa.generate_private_key(
-            public_exponent=65537,
-            key_size=2048,
-        )
+        private_key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
         public_key = private_key.public_key()
 
     return private_key, public_key
@@ -113,10 +109,7 @@ class JwtTokenManager:
 
         payload.update(payload_data)
 
-        headers = {
-            "kid": self.key_id,
-            "alg": self.algorithm,
-        }
+        headers = {"kid": self.key_id, "alg": self.algorithm}
 
         encoded_token = jwt.encode(
             payload, self.private_key, algorithm=self.algorithm, headers=headers
