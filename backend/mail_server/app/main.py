@@ -6,6 +6,7 @@ from smtp_connection_pool import *
 import os
 import httpx
 from prometheus_fastapi_instrumentator import Instrumentator
+from email_factory import get_email_content_provider
 import logging
 
 logger = logging.getLogger(__name__)
@@ -55,10 +56,11 @@ def health():
 async def send_email_users(email: EmailRequest):
     logger.info("received email request: %s", email)
     try:
+        provider = get_email_content_provider(email.format, email.parameters)
         email_to_send = EmailSchema(
             to=email.to,
-            subject=f"[{email.format}] {email.to}",
-            context=str(email.parameters),
+            subject=provider.get_subject(),
+            context=provider.get_body(),
         )
         send_gmail(
             smtp_cp=smtp_cp,
@@ -89,10 +91,11 @@ async def send_email_status(email: EmailRequest):
             response.raise_for_status()
             receiver = response.json()["email"]
 
+        provider = get_email_content_provider(email.format, email.parameters)
         email_to_send = EmailSchema(
             to=receiver,
-            subject=f"[{email.format}] {email.to}",
-            context=str(email.parameters),
+            subject=provider.get_subject(),
+            context=provider.get_body(),
         )
         send_gmail(
             smtp_cp=smtp_cp,
