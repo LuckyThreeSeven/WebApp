@@ -123,7 +123,9 @@ class BlackboxUnconnectedEmail(EmailContentProvider):
 
     def get_content(self) -> str:
         if not self.parameters or len(self.parameters) < 2:
-            raise ValueError("블랙박스 연결 끊김 이메일에 필요한 파라미터(ID, 시간)가 없습니다.")
+            raise ValueError(
+                "블랙박스 연결 끊김 이메일에 필요한 파라미터(ID, 시간)가 없습니다."
+            )
         blackbox_id = self.parameters[0]
         disconnected_at = self.parameters[1]
         return f"""
