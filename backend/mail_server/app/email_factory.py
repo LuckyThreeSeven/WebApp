@@ -15,9 +15,15 @@ class EmailContentProvider(ABC):
         """이메일의 핵심 콘텐츠를 HTML 형식으로 반환합니다."""
         pass
 
+    @abstractmethod
+    def get_disclaimer(self) -> str:
+        """이메일 푸터에 들어갈 고지 사항 문구를 반환합니다."""
+        pass
+
     def get_body(self) -> str:
         """공통 템플릿을 사용하여 전체 이메일 본문을 HTML 형식으로 반환합니다."""
         content = self.get_content()
+        disclaimer = self.get_disclaimer()
         return f"""
         <!DOCTYPE html>
         <html>
@@ -45,7 +51,7 @@ class EmailContentProvider(ABC):
                             <tr>
                                 <td bgcolor="#f8fafc" style="padding: 30px; border-top: 1px solid #e2e8f0;">
                                     <p style="margin: 0; color: #64748B; font-size: 12px; text-align: center;">
-                                        질문이 있으시면 언제든지 저희 고객 지원팀에 문의해주세요.
+                                        {disclaimer}
                                     </p>
                                     <p style="margin: 10px 0 0 0; color: #64748B; font-size: 12px; text-align: center;">
                                         &copy; 2025 Neves. All rights reserved.
@@ -66,7 +72,9 @@ class SignupAuthEmail(EmailContentProvider):
         return "[Neves] 🚀 Neves에 오신 것을 환영합니다!"
 
     def get_content(self) -> str:
-        auth_code = self.parameters[0] if self.parameters else "XXXXXX"
+        if not self.parameters or len(self.parameters) < 1:
+            raise ValueError("회원가입 이메일에 필요한 인증 코드가 없습니다.")
+        auth_code = self.parameters[0]
         return f"""
         <h2 style="color: #1E3A8A; font-size: 24px; font-weight: 700; margin-top: 0; text-align: center;">👤 계정을 거의 다 만들었어요!</h2>
         <p style="color: #334155; font-size: 16px; line-height: 1.6; text-align: center;">Neves의 멤버가 되신 것을 환영합니다! 아래 코드를 사용하여 계정 설정을 완료해주세요.</p>
@@ -74,8 +82,10 @@ class SignupAuthEmail(EmailContentProvider):
             <p style="font-size: 36px; font-weight: 700; color: #1E3A8A; letter-spacing: 8px; margin: 0; font-family: 'Courier New', Courier, monospace;">{auth_code}</p>
         </div>
         <p style="font-size: 14px; color: #64748B; text-align: center;">이 코드는 10분 동안 유효합니다.</p>
-        <p style="font-size: 14px; color: #64748B; text-align: center;">본인이 요청하지 않으셨다면 이 메일은 무시하셔도 괜찮습니다.</p>
         """
+    
+    def get_disclaimer(self) -> str:
+        return "본인이 요청하지 않으셨다면 이 메일은 무시하셔도 괜찮습니다."
 
 class TwoFactorAuthEmail(EmailContentProvider):
     """2단계 인증 이메일 콘텐츠를 생성합니다."""
@@ -83,7 +93,9 @@ class TwoFactorAuthEmail(EmailContentProvider):
         return "[Neves] 🔒 2단계 인증 코드를 확인하세요"
 
     def get_content(self) -> str:
-        auth_code = self.parameters[0] if self.parameters else "XXXXXX"
+        if not self.parameters or len(self.parameters) < 1:
+            raise ValueError("2단계 인증 이메일에 필요한 인증 코드가 없습니다.")
+        auth_code = self.parameters[0]
         return f"""
         <h2 style="color: #1E3A8A; font-size: 24px; font-weight: 700; margin-top: 0; text-align: center;">🔒 2단계 인증 요청</h2>
         <p style="color: #334155; font-size: 16px; line-height: 1.6; text-align: center;">계정을 안전하게 보호하기 위해, 아래 코드를 입력하여 로그인을 완료해주세요.</p>
@@ -91,8 +103,10 @@ class TwoFactorAuthEmail(EmailContentProvider):
             <p style="font-size: 36px; font-weight: 700; color: #1E3A8A; letter-spacing: 8px; margin: 0; font-family: 'Courier New', Courier, monospace;">{auth_code}</p>
         </div>
         <p style="font-size: 14px; color: #64748B; text-align: center;">이 코드는 5분 동안 유효합니다.</p>
-        <p style="font-size: 14px; color: #64748B; text-align: center;">본인이 로그인을 시도하지 않았다면 즉시 비밀번호를 변경하세요.</p>
         """
+
+    def get_disclaimer(self) -> str:
+        return "본인이 로그인을 시도하지 않았다면 즉시 비밀번호를 변경하세요."
 
 class BlackboxUnconnectedEmail(EmailContentProvider):
     """블랙박스 연결 끊김 경고 이메일 콘텐츠를 생성합니다."""
@@ -100,8 +114,10 @@ class BlackboxUnconnectedEmail(EmailContentProvider):
         return "[Neves] ❗️ [경고] 블랙박스 연결이 끊어졌습니다"
 
     def get_content(self) -> str:
-        blackbox_id = self.parameters[0] if self.parameters else "[블랙박스 ID]"
-        disconnected_at = self.parameters[1] if len(self.parameters) > 1 else "[시간]"
+        if not self.parameters or len(self.parameters) < 2:
+            raise ValueError("블랙박스 연결 끊김 이메일에 필요한 파라미터(ID, 시간)가 없습니다.")
+        blackbox_id = self.parameters[0]
+        disconnected_at = self.parameters[1]
         return f"""
         <h2 style="color: #DC2626; font-size: 24px; font-weight: 700; margin-top: 0; text-align: center;">❗️ 블랙박스 연결 끊김</h2>
         <p style="color: #334155; font-size: 16px; line-height: 1.6; text-align: center;">블랙박스 장치의 연결이 끊어진 것이 감지되었습니다. 즉시 확인이 필요합니다.</p>
@@ -110,8 +126,10 @@ class BlackboxUnconnectedEmail(EmailContentProvider):
             <p style="color: #334155; font-size: 16px; margin: 10px 0 0 0; text-align: center;"><strong>연결 끊김 시간:</strong> {disconnected_at}</p>
         </div>
         <p style="font-size: 14px; color: #64748B; text-align: center;">장치의 전원과 네트워크 연결을 확인해주세요.</p>
-        <p style="font-size: 14px; color: #64748B; text-align: center;">이 알림이 잘못되었다고 생각되면 고객 지원팀에 문의하세요.</p>
         """
+
+    def get_disclaimer(self) -> str:
+        return "이 알림이 잘못되었다고 생각되면 고객 지원팀에 문의하세요."
 
 class DefaultEmail(EmailContentProvider):
     """기본 이메일 템플릿입니다."""
@@ -130,6 +148,9 @@ class DefaultEmail(EmailContentProvider):
             <p style="color: #334155; font-size: 16px; line-height: 1.6;"><strong>세부 정보:</strong> {str(self.parameters)}</p>
         </div>
         """
+    
+    def get_disclaimer(self) -> str:
+        return "이 메일은 시스템에서 자동으로 발송되었습니다."
 
 def get_email_content_provider(format_type: str, parameters: list) -> EmailContentProvider:
     """format_type에 따라 적절한 EmailContentProvider 인스턴스를 반환하는 팩토리 함수"""
