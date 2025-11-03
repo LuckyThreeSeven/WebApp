@@ -1,7 +1,9 @@
 from abc import ABC, abstractmethod
 
+
 class EmailContentProvider(ABC):
     """이메일 콘텐츠(제목, 본문) 생성을 위한 추상 базовый класс"""
+
     def __init__(self, parameters: list):
         self.parameters = parameters
 
@@ -66,8 +68,10 @@ class EmailContentProvider(ABC):
         </html>
         """
 
+
 class SignupAuthEmail(EmailContentProvider):
     """회원가입 인증 이메일 콘텐츠를 생성합니다."""
+
     def get_subject(self) -> str:
         return "[Neves] 🚀 Neves에 오신 것을 환영합니다!"
 
@@ -83,12 +87,14 @@ class SignupAuthEmail(EmailContentProvider):
         </div>
         <p style="font-size: 14px; color: #64748B; text-align: center;">이 코드는 10분 동안 유효합니다.</p>
         """
-    
+
     def get_disclaimer(self) -> str:
         return "본인이 요청하지 않으셨다면 이 메일은 무시하셔도 괜찮습니다."
 
+
 class TwoFactorAuthEmail(EmailContentProvider):
     """2단계 인증 이메일 콘텐츠를 생성합니다."""
+
     def get_subject(self) -> str:
         return "[Neves] 🔒 2단계 인증 코드를 확인하세요"
 
@@ -108,8 +114,10 @@ class TwoFactorAuthEmail(EmailContentProvider):
     def get_disclaimer(self) -> str:
         return "본인이 로그인을 시도하지 않았다면 즉시 비밀번호를 변경하세요."
 
+
 class BlackboxUnconnectedEmail(EmailContentProvider):
     """블랙박스 연결 끊김 경고 이메일 콘텐츠를 생성합니다."""
+
     def get_subject(self) -> str:
         return "[Neves] ❗️ [경고] 블랙박스 연결이 끊어졌습니다"
 
@@ -131,8 +139,10 @@ class BlackboxUnconnectedEmail(EmailContentProvider):
     def get_disclaimer(self) -> str:
         return "이 알림이 잘못되었다고 생각되면 고객 지원팀에 문의하세요."
 
+
 class DefaultEmail(EmailContentProvider):
     """기본 이메일 템플릿입니다."""
+
     def __init__(self, format_type: str, parameters: list):
         super().__init__(parameters)
         self.format_type = format_type
@@ -148,11 +158,14 @@ class DefaultEmail(EmailContentProvider):
             <p style="color: #334155; font-size: 16px; line-height: 1.6;"><strong>세부 정보:</strong> {str(self.parameters)}</p>
         </div>
         """
-    
+
     def get_disclaimer(self) -> str:
         return "이 메일은 시스템에서 자동으로 발송되었습니다."
 
-def get_email_content_provider(format_type: str, parameters: list) -> EmailContentProvider:
+
+def get_email_content_provider(
+    format_type: str, parameters: list
+) -> EmailContentProvider:
     """format_type에 따라 적절한 EmailContentProvider 인스턴스를 반환하는 팩토리 함수"""
     provider_map = {
         "SIGNUP_AUTH": SignupAuthEmail,
@@ -160,7 +173,7 @@ def get_email_content_provider(format_type: str, parameters: list) -> EmailConte
         "BLACKBOX_UNCONNECTED": BlackboxUnconnectedEmail,
     }
     provider_class = provider_map.get(format_type)
-    
+
     if provider_class:
         return provider_class(parameters)
     else:

@@ -58,9 +58,7 @@ async def send_email_users(email: EmailRequest):
     try:
         provider = get_email_content_provider(email.format, email.parameters)
         email_to_send = EmailSchema(
-            to=email.to,
-            subject=provider.get_subject(),
-            context=provider.get_body(),
+            to=email.to, subject=provider.get_subject(), context=provider.get_body()
         )
         send_gmail(
             smtp_cp=smtp_cp,
@@ -93,9 +91,7 @@ async def send_email_status(email: EmailRequest):
 
         provider = get_email_content_provider(email.format, email.parameters)
         email_to_send = EmailSchema(
-            to=receiver,
-            subject=provider.get_subject(),
-            context=provider.get_body(),
+            to=receiver, subject=provider.get_subject(), context=provider.get_body()
         )
         send_gmail(
             smtp_cp=smtp_cp,

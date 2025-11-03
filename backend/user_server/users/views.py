@@ -2,11 +2,7 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
 from .models import User
-from .serializers import (
-    EmailSerializer,
-    UserCreateSerializer,
-    VerifyEmailSerializer,
-)
+from .serializers import EmailSerializer, UserCreateSerializer, VerifyEmailSerializer
 from drf_spectacular.utils import extend_schema
 import random
 import string
@@ -80,10 +76,7 @@ def verify_email(request):
     email = serializer.validated_data["email"]
 
     if User.objects.filter(email=email).exists():
-        return Response(
-            {"error": "이미 가입된 이메일입니다."},
-            status=status.HTTP_400_BAD_REQUEST,
-        )
+        return Response({"error": "이미 가입된 이메일입니다."}, status=status.HTTP_400_BAD_REQUEST)
 
     verification_code = "".join(random.choices(string.digits, k=5))
     code_expiry = timezone.now() + timedelta(minutes=5)
@@ -105,10 +98,7 @@ def verify_email(request):
         )
         if response.status_code != 200:
             return Response(
-                {
-                    "error": "메일 서버에서 이메일 발송에 실패했습니다.",
-                    "detail": response.text,
-                },
+                {"error": "메일 서버에서 이메일 발송에 실패했습니다.", "detail": response.text},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
     except requests.exceptions.RequestException as e:
@@ -118,8 +108,7 @@ def verify_email(request):
         )
 
     return Response(
-        {"message": "인증 코드가 이메일로 발송되었습니다. 5분 안에 입력해주세요."},
-        status=status.HTTP_200_OK,
+        {"message": "인증 코드가 이메일로 발송되었습니다. 5분 안에 입력해주세요."}, status=status.HTTP_200_OK
     )
 
 
@@ -173,8 +162,7 @@ def confirm_email(request):
 
     if session_code != code:
         return Response(
-            {"error": "인증 코드가 올바르지 않습니다."},
-            status=status.HTTP_400_BAD_REQUEST,
+            {"error": "인증 코드가 올바르지 않습니다."}, status=status.HTTP_400_BAD_REQUEST
         )
 
     request.session["is_authenticated"] = True
@@ -185,10 +173,7 @@ def confirm_email(request):
     except KeyError:
         pass
 
-    return Response(
-        {"message": "이메일 인증이 완료되었습니다."},
-        status=status.HTTP_200_OK,
-    )
+    return Response({"message": "이메일 인증이 완료되었습니다."}, status=status.HTTP_200_OK)
 
 
 @extend_schema(
@@ -218,17 +203,12 @@ def signup(request):
         not all([session_email, is_authenticated, signup_expiry_str])
         or email != session_email
     ):
-        return Response(
-            {"error": "이메일 인증이 필요합니다."},
-            status=status.HTTP_400_BAD_REQUEST,
-        )
+        return Response({"error": "이메일 인증이 필요합니다."}, status=status.HTTP_400_BAD_REQUEST)
 
     signup_expiry = timezone.datetime.fromisoformat(signup_expiry_str)
     if signup_expiry < timezone.now():
         return Response(
-            {
-                "error": "회원가입 기간이 만료되었습니다. 다시 이메일 인증을 시도해주세요."
-            },
+            {"error": "회원가입 기간이 만료되었습니다. 다시 이메일 인증을 시도해주세요."},
             status=status.HTTP_400_BAD_REQUEST,
         )
 
@@ -274,8 +254,7 @@ def login_password(request):
     user = authenticate(request, email=email, password=password)
     if user is None:
         return Response(
-            {"error": "잘못된 이메일 또는 비밀번호입니다."},
-            status=status.HTTP_401_UNAUTHORIZED,
+            {"error": "잘못된 이메일 또는 비밀번호입니다."}, status=status.HTTP_401_UNAUTHORIZED
         )
 
     # Generate 5-digit 2FA code and store in session
@@ -290,19 +269,12 @@ def login_password(request):
     try:
         response = requests.post(
             mail_server_url + "/email/users",
-            json={
-                "to": email,
-                "format": "2FA_AUTH",
-                "parameters": [verification_code],
-            },
+            json={"to": email, "format": "2FA_AUTH", "parameters": [verification_code]},
             timeout=15,
         )
         if response.status_code != 200:
             return Response(
-                {
-                    "error": "메일 서버에서 이메일 발송에 실패했습니다.",
-                    "detail": response.text,
-                },
+                {"error": "메일 서버에서 이메일 발송에 실패했습니다.", "detail": response.text},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
     except requests.exceptions.RequestException as e:
@@ -311,10 +283,7 @@ def login_password(request):
             status=status.HTTP_500_INTERNAL_SERVER_ERROR,
         )
 
-    return Response(
-        {"message": "2단계 인증 코드가 이메일로 발송되었습니다."},
-        status=status.HTTP_200_OK,
-    )
+    return Response({"message": "2단계 인증 코드가 이메일로 발송되었습니다."}, status=status.HTTP_200_OK)
 
 
 @extend_schema(
@@ -353,8 +322,7 @@ def login_verify(request):
 
     if session_code != code:
         return Response(
-            {"error": "2단계 인증 코드가 잘못되었습니다."},
-            status=status.HTTP_400_BAD_REQUEST,
+            {"error": "2단계 인증 코드가 잘못되었습니다."}, status=status.HTTP_400_BAD_REQUEST
         )
 
     code_expiry = timezone.datetime.fromisoformat(session_expiry_str)
@@ -366,17 +334,14 @@ def login_verify(request):
         except KeyError:
             pass
         return Response(
-            {"error": "2단계 인증 코드가 만료되었습니다."},
-            status=status.HTTP_400_BAD_REQUEST,
+            {"error": "2단계 인증 코드가 만료되었습니다."}, status=status.HTTP_400_BAD_REQUEST
         )
 
     # Verification successful, get user and generate JWT
     try:
         user = User.objects.get(email=session_email)
     except User.DoesNotExist:
-        return Response(
-            {"error": "사용자를 찾을 수 없습니다."}, status=status.HTTP_404_NOT_FOUND
-        )
+        return Response({"error": "사용자를 찾을 수 없습니다."}, status=status.HTTP_404_NOT_FOUND)
 
     # Clear the session data
     try:
@@ -390,9 +355,5 @@ def login_verify(request):
     token = jwtManager.create_token(str(user.uid))
 
     return Response(
-        {
-            "message": "로그인이 완료되었습니다.",
-            "token": str(token),
-        },
-        status=status.HTTP_200_OK,
+        {"message": "로그인이 완료되었습니다.", "token": str(token)}, status=status.HTTP_200_OK
     )

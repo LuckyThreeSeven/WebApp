@@ -113,10 +113,7 @@ cors_allowed_origins_str = os.environ.get("CORS_ALLOWED_ORIGINS", "")
 if cors_allowed_origins_str:
     CORS_ALLOWED_ORIGINS = cors_allowed_origins_str.split(",")
 else:
-    CORS_ALLOWED_ORIGINS = [
-        "http://localhost:3000",
-        "http://127.0.0.1:3000",
-    ]
+    CORS_ALLOWED_ORIGINS = ["http://localhost:3000", "http://127.0.0.1:3000"]
 CORS_ALLOW_CREDENTIALS = True
 
 SESSION_COOKIE_AGE = 1800
@@ -124,6 +121,4 @@ SESSION_COOKIE_DOMAIN = ".neves-box.com"
 SESSION_COOKIE_SAMESITE = "None"
 SESSION_COOKIE_SECURE = True
 
-REST_FRAMEWORK = {
-    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
-}
+REST_FRAMEWORK = {"DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema"}
